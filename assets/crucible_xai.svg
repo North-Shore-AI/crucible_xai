@@ -1,32 +1,42 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+<svg width="200" height="231" viewBox="0 0 200 231" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    <linearGradient id="grad_crucible_ensemble" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B4789;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B4789;stop-opacity:0.7" />
     </linearGradient>
   </defs>
 
-  <!-- Crucible base -->
-  <path d="M 60 140 L 50 180 L 150 180 L 140 140 Z" fill="url(#grad1)" stroke="#1E1B4B" stroke-width="2"/>
+  <!-- Hexagon shape (Elixir style) -->
+  <path d="M 100,5 L 190,62.5 L 190,177.5 L 100,235 L 10,177.5 L 10,62.5 Z"
+        fill="url(#grad_crucible_ensemble)"
+        stroke="#FFFFFF"
+        stroke-width="3"/>
 
-  <!-- Flame/knowledge symbol -->
-  <circle cx="100" cy="100" r="40" fill="#FCD34D" opacity="0.3"/>
-  <circle cx="100" cy="100" r="25" fill="#FBBF24" opacity="0.5"/>
+  <!-- Inner hexagon for depth -->
+  <path d="M 100,25 L 170,67.5 L 170,172.5 L 100,215 L 30,172.5 L 30,67.5 Z"
+        fill="none"
+        stroke="#FFFFFF"
+        stroke-width="1"
+        opacity="0.3"/>
 
-  <!-- Brain/explanation nodes -->
-  <circle cx="70" cy="80" r="8" fill="#10B981" stroke="#065F46" stroke-width="2"/>
-  <circle cx="100" cy="70" r="8" fill="#10B981" stroke="#065F46" stroke-width="2"/>
-  <circle cx="130" cy="80" r="8" fill="#10B981" stroke="#065F46" stroke-width="2"/>
-  <circle cx="85" cy="110" r="8" fill="#10B981" stroke="#065F46" stroke-width="2"/>
-  <circle cx="115" cy="110" r="8" fill="#10B981" stroke="#065F46" stroke-width="2"/>
+  <!-- Letter/Icon in center -->
+  <text x="100" y="135"
+        font-family="Arial, sans-serif"
+        font-size="80"
+        font-weight="bold"
+        fill="#FFFFFF"
+        text-anchor="middle">
+    C
+  </text>
 
-  <!-- Connecting lines -->
-  <line x1="70" y1="80" x2="100" y2="70" stroke="#059669" stroke-width="2"/>
-  <line x1="100" y1="70" x2="130" y2="80" stroke="#059669" stroke-width="2"/>
-  <line x1="70" y1="80" x2="85" y2="110" stroke="#059669" stroke-width="2"/>
-  <line x1="130" y1="80" x2="115" y2="110" stroke="#059669" stroke-width="2"/>
-  <line x1="85" y1="110" x2="115" y2="110" stroke="#059669" stroke-width="2"/>
-
-  <!-- XAI text -->
-  <text x="100" y="40" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#1E1B4B" text-anchor="middle">XAI</text>
+  <!-- Small text at bottom -->
+  <text x="100" y="210"
+        font-family="Arial, sans-serif"
+        font-size="14"
+        font-weight="normal"
+        fill="#FFFFFF"
+        text-anchor="middle"
+        opacity="0.9">
+    Crucible
+  </text>
 </svg>
