@@ -6,6 +6,13 @@
 
 **Explainable AI (XAI) Tools for the Crucible Framework**
 
+[![Elixir](https://img.shields.io/badge/elixir-1.14+-purple.svg)](https://elixir-lang.org)
+[![OTP](https://img.shields.io/badge/otp-25+-red.svg)](https://www.erlang.org)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/North-Shore-AI/crucible_xai/blob/main/LICENSE)
+[![Documentation](https://img.shields.io/badge/docs-hexdocs-blueviolet.svg)](https://hexdocs.pm/crucible_xai)
+
+---
+
 A comprehensive Explainable AI (XAI) library for Elixir, providing model interpretability and explanation tools. CrucibleXAI helps you understand and explain AI model predictions through LIME implementations, SHAP-like explanations, feature attribution methods, and comprehensive model interpretability techniques for both local and global explanations.
 
 ## Features
