@@ -19,15 +19,16 @@
         stroke-width="1"
         opacity="0.3"/>
 
-  <!-- Letter/Icon in center -->
-  <text x="100" y="135"
-        font-family="Arial, sans-serif"
-        font-size="80"
-        font-weight="bold"
-        fill="#FFFFFF"
-        text-anchor="middle">
-    C
-  </text>
+  <!-- Gear shape for the brain -->
+  <path d="M100 120 a 20 20 0 1 0 0 -40 a 20 20 0 1 0 0 40z" fill="white" />
+  <path d="M100 70 l 10 10 l -10 10 l -10 -10z" fill="white" />
+  <path d="M100 130 l 10 -10 l -10 -10 l -10 10z" fill="white" />
+  <path d="M70 100 l 10 10 l -10 10 l -10 -10z" fill="white" />
+  <path d="M130 100 l -10 10 l -10 -10 l 10 -10z" fill="white" />
+
+  <!-- Magnifying glass -->
+  <circle cx="90" cy="100" r="30" stroke="white" stroke-width="5" fill="none" />
+  <line x1="115" y1="125" x2="135" y2="145" stroke="white" stroke-width="5" />
 
   <!-- Small text at bottom -->
   <text x="100" y="210"
