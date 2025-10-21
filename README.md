@@ -468,7 +468,7 @@ This is part of the Crucible AI Research Infrastructure. Contributions welcome!
 
 ## 📋 License
 
-MIT License - see [LICENSE](LICENSE) file for details
+MIT License - see LICENSE file for details
 
 ---
 
