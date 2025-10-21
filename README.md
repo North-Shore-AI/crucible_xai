@@ -9,8 +9,8 @@
 [![Elixir](https://img.shields.io/badge/elixir-1.14+-purple.svg)](https://elixir-lang.org)
 [![OTP](https://img.shields.io/badge/otp-25+-red.svg)](https://www.erlang.org)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/North-Shore-AI/crucible_xai/blob/main/LICENSE)
-[![Tests](https://img.shields.io/badge/tests-135_passing-brightgreen.svg)]()
-[![Coverage](https://img.shields.io/badge/coverage-86.1%25-green.svg)]()
+[![Tests](https://img.shields.io/badge/tests-141_passing-brightgreen.svg)]()
+[![Coverage](https://img.shields.io/badge/coverage-87.1%25-green.svg)]()
 
 ---
 
@@ -31,7 +31,8 @@ A production-ready Explainable AI (XAI) library for Elixir, providing model inte
 - ✅ **Model-Agnostic**: Works with any prediction function
 - ✅ **High Performance**: Nx tensor operations, <50ms LIME, ~1s SHAP
 - ✅ **Feature Attribution**: Permutation importance for global feature ranking
-- ✅ **Well-Tested**: 135 tests (106 unit + 19 property-based + 10 doctests), >86% coverage
+- ✅ **HTML Visualizations**: Interactive charts for LIME, SHAP, and comparisons
+- ✅ **Well-Tested**: 141 tests (111 unit + 19 property-based + 11 doctests), >87% coverage
 - ✅ **Zero Warnings**: Strict compilation with comprehensive type specifications
 - ✅ **Shapley Properties**: Additivity, symmetry, and dummy properties validated
 
@@ -171,6 +172,33 @@ importance = CrucibleXai.feature_importance(
 # Get top 2 features
 top_features = CrucibleXAI.FeatureAttribution.top_k(importance, 2)
 # => [{0, %{importance: 1.2, ...}}, {1, %{importance: 0.8, ...}}]
+```
+
+### Interactive Visualizations
+
+```elixir
+# Generate HTML visualization
+explanation = CrucibleXai.explain(instance, predict_fn)
+html = CrucibleXAI.Visualization.to_html(
+  explanation,
+  feature_names: %{0 => "Age", 1 => "Income", 2 => "Credit Score"}
+)
+
+# Save to file
+CrucibleXAI.Visualization.save_html(explanation, "explanation.html")
+
+# Compare LIME vs SHAP
+lime_exp = CrucibleXai.explain(instance, predict_fn)
+shap_vals = CrucibleXai.explain_shap(instance, background, predict_fn)
+
+comparison_html = CrucibleXAI.Visualization.comparison_html(
+  lime_exp,
+  shap_vals,
+  instance,
+  feature_names: %{0 => "Feature A", 1 => "Feature B"}
+)
+
+File.write!("comparison.html", comparison_html)
 ```
 
 ## 📊 Understanding the Algorithms
