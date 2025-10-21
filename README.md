@@ -14,7 +14,9 @@
 
 ---
 
-A production-ready Explainable AI (XAI) library for Elixir, providing model interpretability through **LIME (Local Interpretable Model-agnostic Explanations)**. Built on Nx for high-performance numerical computing with comprehensive test coverage and strict quality standards.
+A production-ready Explainable AI (XAI) library for Elixir, providing model interpretability through **LIME, SHAP, and Feature Attribution methods**. Built on Nx for high-performance numerical computing with comprehensive test coverage and strict quality standards.
+
+**Version**: 0.2.0 | **Tests**: 141 passing | **Coverage**: 87.1%
 
 ## ✨ Features
 
