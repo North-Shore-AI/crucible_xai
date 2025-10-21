@@ -16,7 +16,19 @@ defmodule CrucibleXai.MixProject do
       docs: docs(),
       source_url: @source_url,
       homepage_url: @source_url,
-      name: "CrucibleXAI"
+      name: "CrucibleXAI",
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ],
+      dialyzer: [
+        plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
+        plt_add_apps: [:mix, :ex_unit],
+        flags: [:error_handling, :underspecs, :unmatched_returns]
+      ]
     ]
   end
 
@@ -29,7 +41,11 @@ defmodule CrucibleXai.MixProject do
   defp deps do
     [
       {:nx, "~> 0.7"},
-      {:ex_doc, "~> 0.31", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.31", only: :dev, runtime: false},
+      {:jason, "~> 1.4"},
+      {:stream_data, "~> 1.1", only: :test},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev], runtime: false}
     ]
   end
 
