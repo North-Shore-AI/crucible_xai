@@ -9,8 +9,8 @@
 [![Elixir](https://img.shields.io/badge/elixir-1.14+-purple.svg)](https://elixir-lang.org)
 [![OTP](https://img.shields.io/badge/otp-25+-red.svg)](https://www.erlang.org)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/North-Shore-AI/crucible_xai/blob/main/LICENSE)
-[![Tests](https://img.shields.io/badge/tests-98_passing-brightgreen.svg)]()
-[![Coverage](https://img.shields.io/badge/coverage-84.8%25-green.svg)]()
+[![Tests](https://img.shields.io/badge/tests-135_passing-brightgreen.svg)]()
+[![Coverage](https://img.shields.io/badge/coverage-86.1%25-green.svg)]()
 
 ---
 
@@ -30,13 +30,15 @@ A production-ready Explainable AI (XAI) library for Elixir, providing model inte
 - ✅ **Batch Processing**: Efficient explanation of multiple instances
 - ✅ **Model-Agnostic**: Works with any prediction function
 - ✅ **High Performance**: Nx tensor operations, <50ms LIME, ~1s SHAP
-- ✅ **Well-Tested**: 122 tests (97 unit + 17 property-based + 8 doctests), >85% coverage
+- ✅ **Feature Attribution**: Permutation importance for global feature ranking
+- ✅ **Well-Tested**: 135 tests (106 unit + 19 property-based + 10 doctests), >86% coverage
 - ✅ **Zero Warnings**: Strict compilation with comprehensive type specifications
 - ✅ **Shapley Properties**: Additivity, symmetry, and dummy properties validated
 
 ### Roadmap
 
-- 🚧 **Feature Attribution**: Permutation, Gradient-based, Occlusion methods (Phase 3)
+- 🚧 **Gradient-based Attribution**: Gradient×Input, Integrated Gradients (Phase 3b)
+- 🚧 **Occlusion-based Attribution**: Sliding window occlusion sensitivity (Phase 3c)
 - 🚧 **Global Interpretability**: Partial dependence plots, feature interactions (Phase 4)
 - 🚧 **Visualization**: Interactive HTML plots and charts (Phase 5)
 - 🚧 **CrucibleTrace Integration**: Combined explanations with reasoning traces (Phase 6)
@@ -136,6 +138,39 @@ shap_sum = Enum.sum(Map.values(shap_values))
 # Verify with built-in validator
 is_valid = CrucibleXAI.SHAP.verify_additivity(shap_values, instance, background, predict_fn)
 # => true
+```
+
+### Feature Attribution (Permutation Importance)
+
+```elixir
+# Calculate global feature importance across validation set
+predict_fn = fn [age, income, credit_score] ->
+  0.5 * age + 0.3 * income + 0.2 * credit_score
+end
+
+validation_data = [
+  {[25.0, 50000.0, 700.0], 25.5},
+  {[35.0, 75000.0, 750.0], 35.3},
+  {[45.0, 100000.0, 800.0], 45.2}
+  # ... more validation samples
+]
+
+# Compute permutation importance
+importance = CrucibleXai.feature_importance(
+  predict_fn,
+  validation_data,
+  metric: :mse,
+  num_repeats: 10
+)
+# => %{
+#   0 => %{importance: 1.2, std_dev: 0.3},  # Age
+#   1 => %{importance: 0.8, std_dev: 0.2},  # Income
+#   2 => %{importance: 0.4, std_dev: 0.1}   # Credit score
+# }
+
+# Get top 2 features
+top_features = CrucibleXAI.FeatureAttribution.top_k(importance, 2)
+# => [{0, %{importance: 1.2, ...}}, {1, %{importance: 0.8, ...}}]
 ```
 
 ## 📊 Understanding the Algorithms

@@ -45,7 +45,7 @@ defmodule CrucibleXai do
     "Why Should I Trust You?": Explaining the Predictions of Any Classifier. KDD.
   """
 
-  alias CrucibleXAI.{LIME, SHAP, Explanation}
+  alias CrucibleXAI.{LIME, SHAP, FeatureAttribution, Explanation}
 
   @doc """
   Explain a model prediction using LIME.
@@ -114,5 +114,32 @@ defmodule CrucibleXai do
         }
   def explain_shap(instance, background_data, predict_fn, opts \\ []) do
     SHAP.explain(instance, background_data, predict_fn, opts)
+  end
+
+  @doc """
+  Calculate feature importance using permutation importance.
+
+  Convenience function that delegates to `CrucibleXAI.FeatureAttribution.permutation_importance/3`.
+
+  ## Parameters
+    * `predict_fn` - Prediction function
+    * `validation_data` - List of {instance, label} tuples
+    * `opts` - Options (see `CrucibleXAI.FeatureAttribution` for details)
+
+  ## Returns
+    Map of feature_index => %{importance: float, std_dev: float}
+
+  ## Examples
+      iex> predict_fn = fn [x] -> x * 2.0 end
+      iex> data = [{[1.0], 2.0}, {[2.0], 4.0}]
+      iex> imp = CrucibleXai.feature_importance(predict_fn, data, num_repeats: 2)
+      iex> is_map(imp)
+      true
+  """
+  @spec feature_importance(function(), list({list(), number()}), keyword()) :: %{
+          integer() => %{importance: float(), std_dev: float()}
+        }
+  def feature_importance(predict_fn, validation_data, opts \\ []) do
+    FeatureAttribution.permutation_importance(predict_fn, validation_data, opts)
   end
 end
