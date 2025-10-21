@@ -45,7 +45,7 @@ defmodule CrucibleXai do
     "Why Should I Trust You?": Explaining the Predictions of Any Classifier. KDD.
   """
 
-  alias CrucibleXAI.{LIME, Explanation}
+  alias CrucibleXAI.{LIME, SHAP, Explanation}
 
   @doc """
   Explain a model prediction using LIME.
@@ -87,5 +87,32 @@ defmodule CrucibleXai do
   @spec explain_batch(list(), function(), keyword()) :: list(Explanation.t())
   def explain_batch(instances, predict_fn, opts \\ []) do
     LIME.explain_batch(instances, predict_fn, opts)
+  end
+
+  @doc """
+  Explain using SHAP (Shapley values).
+
+  Convenience function that delegates to `CrucibleXAI.SHAP.explain/4`.
+
+  ## Parameters
+    * `instance` - The instance to explain
+    * `background_data` - Background dataset for baseline
+    * `predict_fn` - Prediction function
+    * `opts` - Options (see `CrucibleXAI.SHAP` for details)
+
+  ## Returns
+    Map of feature_index => shapley_value
+
+  ## Examples
+      iex> predict_fn = fn [x] -> x * 2.0 end
+      iex> shap = CrucibleXai.explain_shap([5.0], [[0.0]], predict_fn, num_samples: 500)
+      iex> is_map(shap)
+      true
+  """
+  @spec explain_shap(list() | Nx.Tensor.t(), list(), function(), keyword()) :: %{
+          integer() => float()
+        }
+  def explain_shap(instance, background_data, predict_fn, opts \\ []) do
+    SHAP.explain(instance, background_data, predict_fn, opts)
   end
 end

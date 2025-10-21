@@ -21,22 +21,25 @@ A production-ready Explainable AI (XAI) library for Elixir, providing model inte
 ### Currently Implemented
 
 - ✅ **LIME Implementation**: Full LIME algorithm with local linear approximations
+- ✅ **SHAP Implementation**: KernelSHAP with Shapley value computation
 - ✅ **Multiple Sampling Strategies**: Gaussian, Uniform, Categorical, and Combined
 - ✅ **Flexible Kernels**: Exponential and Cosine proximity weighting
 - ✅ **Feature Selection**: Highest weights, Forward selection, Lasso-approximation
 - ✅ **Interpretable Models**: Weighted Linear Regression and Ridge Regression
+- ✅ **Coalition Sampling**: Efficient SHAP coalition generation and weighting
 - ✅ **Batch Processing**: Efficient explanation of multiple instances
 - ✅ **Model-Agnostic**: Works with any prediction function
-- ✅ **High Performance**: Nx tensor operations, typical <50ms per explanation
-- ✅ **Well-Tested**: 98 tests (77 unit + 14 property-based + 7 doctests), 84.8% coverage
+- ✅ **High Performance**: Nx tensor operations, <50ms LIME, ~1s SHAP
+- ✅ **Well-Tested**: 122 tests (97 unit + 17 property-based + 8 doctests), >85% coverage
 - ✅ **Zero Warnings**: Strict compilation with comprehensive type specifications
+- ✅ **Shapley Properties**: Additivity, symmetry, and dummy properties validated
 
 ### Roadmap
 
-- 🚧 **SHAP-like Explanations**: Shapley value-based feature attribution (Phase 2)
-- 🚧 **Global Interpretability**: Partial dependence plots, feature interactions (Phase 3)
-- 🚧 **Visualization**: Interactive HTML plots and charts (Phase 3)
-- 🚧 **CrucibleTrace Integration**: Combined explanations with reasoning traces (Phase 4)
+- 🚧 **Feature Attribution**: Permutation, Gradient-based, Occlusion methods (Phase 3)
+- 🚧 **Global Interpretability**: Partial dependence plots, feature interactions (Phase 4)
+- 🚧 **Visualization**: Interactive HTML plots and charts (Phase 5)
+- 🚧 **CrucibleTrace Integration**: Combined explanations with reasoning traces (Phase 6)
 
 ## 📦 Installation
 
@@ -112,9 +115,34 @@ Enum.each(explanations, fn exp ->
 end)
 ```
 
-## 📊 Understanding LIME
+### SHAP Explanations
 
-### How It Works
+```elixir
+# Use SHAP for theoretically grounded feature attribution
+predict_fn = fn [x, y] -> 2.0 * x + 3.0 * y end
+instance = [1.0, 1.0]
+background = [[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]]  # Representative baseline samples
+
+# Get Shapley values
+shap_values = CrucibleXai.explain_shap(instance, background, predict_fn, num_samples: 2000)
+# => %{0 => 2.0, 1 => 3.0}
+
+# Verify additivity: SHAP values sum to (prediction - baseline)
+prediction = predict_fn.(instance)
+baseline = predict_fn.([0.0, 0.0])
+shap_sum = Enum.sum(Map.values(shap_values))
+# shap_sum ≈ prediction - baseline
+
+# Verify with built-in validator
+is_valid = CrucibleXAI.SHAP.verify_additivity(shap_values, instance, background, predict_fn)
+# => true
+```
+
+## 📊 Understanding the Algorithms
+
+### LIME: Local Interpretable Model-agnostic Explanations
+
+#### How It Works
 
 1. **Perturbation**: Generate samples around the instance (e.g., Gaussian noise)
 2. **Prediction**: Get predictions from your black-box model
@@ -123,7 +151,7 @@ end)
 5. **Fit**: Train a simple linear model on weighted samples
 6. **Extract**: Feature weights = explanation
 
-### Visual Example
+#### Visual Example
 
 ```
 Original Instance: [5.0, 10.0]
@@ -138,6 +166,45 @@ Fit: prediction ≈ 2.1*feature₀ + 3.2*feature₁ + 0.5
 ↓
 Explanation: Feature 1 has impact 3.2, Feature 0 has impact 2.1
 ```
+
+### SHAP: SHapley Additive exPlanations
+
+#### How It Works
+
+1. **Coalition Generation**: Generate random feature subsets (coalitions)
+2. **Coalition Instances**: For each coalition, create instance with only selected features
+3. **Predictions**: Get predictions for all coalition instances
+4. **SHAP Weighting**: Weight coalitions using SHAP kernel based on size
+5. **Regression**: Solve weighted regression to get Shapley values
+6. **Properties**: Guarantees additivity, symmetry, and dummy properties
+
+#### Visual Example
+
+```
+Instance: [5.0, 10.0], Background: [0.0, 0.0]
+↓
+Generate coalitions: [0,0], [1,0], [0,1], [1,1], ...
+↓
+Create instances: [0,0], [5,0], [0,10], [5,10], ...
+↓
+Get predictions from model for each coalition
+↓
+Calculate SHAP kernel weights (empty/full coalitions get high weight)
+↓
+Solve: predictions = coalition_matrix @ shapley_values
+↓
+Result: φ₀ = 2.0, φ₁ = 3.0
+Verify: φ₀ + φ₁ = prediction(5,10) - prediction(0,0) ✓
+```
+
+#### LIME vs SHAP
+
+| Aspect | LIME | SHAP |
+|--------|------|------|
+| **Speed** | Fast (~50ms) | Slower (~1s) |
+| **Theory** | Heuristic | Game theory (Shapley values) |
+| **Guarantee** | Local fidelity | Additivity, symmetry, consistency |
+| **Use When** | Quick insights, many instances | Precise attribution, fairness analysis |
 
 ## 🎯 Configuration Options
 
