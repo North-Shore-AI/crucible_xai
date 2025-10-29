@@ -75,13 +75,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 2D PDP for feature interaction analysis
   - Auto-detects feature ranges or uses custom ranges
   - Configurable grid resolution
+  - Robust handling of edge cases (nil values, min==max)
 - **Individual Conditional Expectation (ICE)**: Shows per-instance prediction curves
   - One curve per instance revealing heterogeneity
   - Centered ICE for relative change visualization
   - Average of ICE equals PDP
   - Detects non-additive effects
+- **Accumulated Local Effects (ALE)**: Robust alternative to PDP for correlated features
+  - Avoids extrapolation to unrealistic feature combinations
+  - Quantile-based binning for equal representation
+  - Centered effects around zero
+  - Better handles feature dependencies
+- **H-Statistic**: Friedman's interaction detection
+  - Measures interaction strength (0=none to 1=pure)
+  - Pairwise interaction analysis
+  - All-pairs scanning with find_all_interactions
+  - Filtering and sorting by strength
+  - Automatic interpretation (None/Weak/Moderate/Strong)
 - Efficient grid generation and batch prediction
-- 26 comprehensive tests (24 unit + 2 property-based)
+- 65 comprehensive tests (61 unit + 4 property-based)
 
 ### Test Coverage
 - Added 13 tests for LinearSHAP (unit + property + integration)
@@ -90,9 +102,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added 6 tests for SHAP parallel batch processing
 - Added 23 tests for gradient attribution methods (21 unit + 2 property)
 - Added 19 tests for occlusion attribution methods (16 unit + 3 property)
-- Added 26 tests for global interpretability (24 unit + 2 property)
-- Total: 251 tests (11 doctests + 30 properties + 210 unit tests)
+- Added 26 tests for PDP and ICE (24 unit + 2 property)
+- Added 13 tests for ALE (11 unit + 2 property)
+- Added 13 tests for H-statistic interactions (11 unit + 2 property)
+- Total: 277 tests (11 doctests + 34 properties + 232 unit tests)
 - 100% pass rate maintained
+- >93% code coverage
 
 ### Performance
 - LinearSHAP: <2ms per explanation (exact values)
@@ -106,6 +121,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PDP 1D: ~10-50ms depending on grid points and dataset size
 - PDP 2D: ~50-200ms for grid combinations
 - ICE: ~10-100ms depending on instances and grid points
+- ALE: ~10-100ms depending on bins and dataset size
+- H-Statistic: ~50-300ms per feature pair (requires 3 PDP computations)
 - Parallel batch processing: 40-60% speed improvement
 
 ## [0.2.0] - 2025-10-20

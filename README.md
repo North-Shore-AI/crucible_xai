@@ -11,14 +11,14 @@
 [![Hex.pm](https://img.shields.io/hexpm/v/crucible_xai.svg)](https://hex.pm/packages/crucible_xai)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-purple.svg)](https://hexdocs.pm/crucible_xai)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/North-Shore-AI/crucible_xai/blob/main/LICENSE)
-[![Tests](https://img.shields.io/badge/tests-251_passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-277_passing-brightgreen.svg)]()
 [![Coverage](https://img.shields.io/badge/coverage-87.1%25-green.svg)]()
 
 ---
 
 A production-ready Explainable AI (XAI) library for Elixir, providing model interpretability through **LIME, SHAP, and Feature Attribution methods**. Built on Nx for high-performance numerical computing with comprehensive test coverage and strict quality standards.
 
-**Version**: 0.2.1 | **Tests**: 251 passing | **Coverage**: 93.2%
+**Version**: 0.2.1 | **Tests**: 277 passing | **Coverage**: 94.1%
 
 ## ✨ Features
 
@@ -36,19 +36,18 @@ A production-ready Explainable AI (XAI) library for Elixir, providing model inte
 - ✅ **High Performance**: Nx tensor operations, <50ms LIME, ~1s SHAP
 - ✅ **Feature Attribution**: Permutation importance for global feature ranking
 - ✅ **HTML Visualizations**: Interactive charts for LIME, SHAP, and comparisons
-- ✅ **Well-Tested**: 251 tests (210 unit + 30 property-based + 11 doctests), >93% coverage
+- ✅ **Well-Tested**: 277 tests (232 unit + 34 property-based + 11 doctests), >94% coverage
 - ✅ **Parallel Processing**: Fast batch explanations with configurable concurrency
 - ✅ **Gradient Attribution**: Gradient×Input, Integrated Gradients, SmoothGrad for neural networks
 - ✅ **Occlusion Attribution**: Feature occlusion, sliding windows for model-agnostic attribution
-- ✅ **Global Interpretability**: PDP (1D/2D), ICE plots for model-wide understanding
+- ✅ **Global Interpretability**: PDP (1D/2D), ICE, ALE, H-statistic for interactions
 - ✅ **Zero Warnings**: Strict compilation with comprehensive type specifications
 - ✅ **Shapley Properties**: Additivity, symmetry, and dummy properties validated
 
 ### Roadmap
 
-- 🚧 **ALE Plots**: Accumulated Local Effects for correlated features
-- 🚧 **Feature Interactions**: H-statistic for interaction detection
 - 🚧 **TreeSHAP**: Efficient exact SHAP for tree-based models
+- 🚧 **Advanced Visualizations**: Enhanced interactive plots for all methods
 - 🚧 **Visualization**: Interactive HTML plots and charts (Phase 5)
 - 🚧 **CrucibleTrace Integration**: Combined explanations with reasoning traces (Phase 6)
 
@@ -307,6 +306,35 @@ centered = CrucibleXAI.Global.ICE.centered_ice(ice)
 
 # Average ICE equals PDP
 pdp_from_ice = CrucibleXAI.Global.ICE.average_ice_curves(ice)
+
+# ALE: Better than PDP when features are correlated
+ale = CrucibleXAI.Global.ALE.accumulated_local_effects(
+  predict_fn,
+  data,
+  1,  # Analyze income
+  num_bins: 10  # Quantile-based bins
+)
+# => %{bin_centers: [...], effects: [...], feature_index: 1}
+# Effects are centered around zero, showing local changes
+
+# H-Statistic: Detect feature interactions
+h_stat = CrucibleXAI.Global.Interaction.h_statistic(
+  predict_fn,
+  data,
+  {0, 1},  # Check if age and income interact
+  num_grid_points: 10
+)
+# => 0.15 (weak interaction)
+
+# Find all pairwise interactions
+all_interactions = CrucibleXAI.Global.Interaction.find_all_interactions(
+  predict_fn,
+  data,
+  num_grid_points: 10,
+  sort: true,      # Sort by strength
+  threshold: 0.2   # Only show H >= 0.2
+)
+# => [%{feature_pair: {1, 2}, h_statistic: 0.45, interpretation: "Moderate interaction"}, ...]
 ```
 
 ### Feature Attribution (Permutation Importance)
