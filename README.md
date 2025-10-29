@@ -11,14 +11,14 @@
 [![Hex.pm](https://img.shields.io/hexpm/v/crucible_xai.svg)](https://hex.pm/packages/crucible_xai)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-purple.svg)](https://hexdocs.pm/crucible_xai)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/North-Shore-AI/crucible_xai/blob/main/LICENSE)
-[![Tests](https://img.shields.io/badge/tests-225_passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-251_passing-brightgreen.svg)]()
 [![Coverage](https://img.shields.io/badge/coverage-87.1%25-green.svg)]()
 
 ---
 
 A production-ready Explainable AI (XAI) library for Elixir, providing model interpretability through **LIME, SHAP, and Feature Attribution methods**. Built on Nx for high-performance numerical computing with comprehensive test coverage and strict quality standards.
 
-**Version**: 0.2.1 | **Tests**: 225 passing | **Coverage**: 91.8%
+**Version**: 0.2.1 | **Tests**: 251 passing | **Coverage**: 93.2%
 
 ## ✨ Features
 
@@ -36,16 +36,18 @@ A production-ready Explainable AI (XAI) library for Elixir, providing model inte
 - ✅ **High Performance**: Nx tensor operations, <50ms LIME, ~1s SHAP
 - ✅ **Feature Attribution**: Permutation importance for global feature ranking
 - ✅ **HTML Visualizations**: Interactive charts for LIME, SHAP, and comparisons
-- ✅ **Well-Tested**: 225 tests (188 unit + 26 property-based + 11 doctests), >91% coverage
+- ✅ **Well-Tested**: 251 tests (210 unit + 30 property-based + 11 doctests), >93% coverage
 - ✅ **Parallel Processing**: Fast batch explanations with configurable concurrency
 - ✅ **Gradient Attribution**: Gradient×Input, Integrated Gradients, SmoothGrad for neural networks
 - ✅ **Occlusion Attribution**: Feature occlusion, sliding windows for model-agnostic attribution
+- ✅ **Global Interpretability**: PDP (1D/2D), ICE plots for model-wide understanding
 - ✅ **Zero Warnings**: Strict compilation with comprehensive type specifications
 - ✅ **Shapley Properties**: Additivity, symmetry, and dummy properties validated
 
 ### Roadmap
 
-- 🚧 **Global Interpretability**: Partial dependence plots, ICE, ALE, feature interactions (Phase 4)
+- 🚧 **ALE Plots**: Accumulated Local Effects for correlated features
+- 🚧 **Feature Interactions**: H-statistic for interaction detection
 - 🚧 **TreeSHAP**: Efficient exact SHAP for tree-based models
 - 🚧 **Visualization**: Interactive HTML plots and charts (Phase 5)
 - 🚧 **CrucibleTrace Integration**: Combined explanations with reasoning traces (Phase 6)
@@ -254,6 +256,57 @@ sensitivity = CrucibleXAI.OcclusionAttribution.occlusion_sensitivity(
   normalize: true,  # Sum to 1.0
   absolute: true    # Use absolute values
 )
+```
+
+### Global Interpretability (PDP & ICE)
+
+Understand model behavior across the entire feature space:
+
+```elixir
+# Partial Dependence Plot (PDP) - Shows average feature effect
+predict_fn = fn [age, income, experience] ->
+  0.5 * age + 0.3 * income + 0.2 * experience
+end
+
+data = [
+  [25.0, 50000.0, 2.0],
+  [35.0, 75000.0, 5.0],
+  [45.0, 100000.0, 10.0]
+  # ... more instances
+]
+
+# 1D PDP: How does income affect predictions on average?
+pdp_1d = CrucibleXAI.Global.PDP.partial_dependence(
+  predict_fn,
+  data,
+  1,  # Feature index for income
+  num_grid_points: 20
+)
+# => %{grid_values: [50k, 55k, ..., 100k], predictions: [avg_pred_at_50k, ...]}
+
+# 2D PDP: How do age AND income interact?
+pdp_2d = CrucibleXAI.Global.PDP.partial_dependence_2d(
+  predict_fn,
+  data,
+  {0, 1},  # Age and income
+  num_grid_points: 10
+)
+# => %{grid_values_x: [...], grid_values_y: [...], predictions: [[...]]}
+
+# ICE: Show how predictions change for EACH individual instance
+ice = CrucibleXAI.Global.ICE.ice_curves(
+  predict_fn,
+  data,
+  1,  # Analyze income
+  num_grid_points: 20
+)
+# => %{grid_values: [...], curves: [[curve1], [curve2], ...]}
+
+# Centered ICE: Show relative changes
+centered = CrucibleXAI.Global.ICE.centered_ice(ice)
+
+# Average ICE equals PDP
+pdp_from_ice = CrucibleXAI.Global.ICE.average_ice_curves(ice)
 ```
 
 ### Feature Attribution (Permutation Importance)

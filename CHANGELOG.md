@@ -69,6 +69,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Intuitive interpretation of feature importance
 - 19 comprehensive tests (16 unit + 3 property-based)
 
+#### Global Interpretability Methods
+- **Partial Dependence Plots (PDP)**: Shows marginal effect of features
+  - 1D PDP for single feature analysis
+  - 2D PDP for feature interaction analysis
+  - Auto-detects feature ranges or uses custom ranges
+  - Configurable grid resolution
+- **Individual Conditional Expectation (ICE)**: Shows per-instance prediction curves
+  - One curve per instance revealing heterogeneity
+  - Centered ICE for relative change visualization
+  - Average of ICE equals PDP
+  - Detects non-additive effects
+- Efficient grid generation and batch prediction
+- 26 comprehensive tests (24 unit + 2 property-based)
+
 ### Test Coverage
 - Added 13 tests for LinearSHAP (unit + property + integration)
 - Added 12 tests for SamplingShap (unit + property + integration)
@@ -76,7 +90,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added 6 tests for SHAP parallel batch processing
 - Added 23 tests for gradient attribution methods (21 unit + 2 property)
 - Added 19 tests for occlusion attribution methods (16 unit + 3 property)
-- Total: 225 tests (11 doctests + 26 properties + 188 unit tests)
+- Added 26 tests for global interpretability (24 unit + 2 property)
+- Total: 251 tests (11 doctests + 30 properties + 210 unit tests)
 - 100% pass rate maintained
 
 ### Performance
@@ -88,6 +103,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SmoothGrad: ~10-100ms (depends on samples, default: 50)
 - Feature Occlusion: ~1-5ms per feature (model-agnostic)
 - Sliding Window: ~1-10ms per window position
+- PDP 1D: ~10-50ms depending on grid points and dataset size
+- PDP 2D: ~50-200ms for grid combinations
+- ICE: ~10-100ms depending on instances and grid points
 - Parallel batch processing: 40-60% speed improvement
 
 ## [0.2.0] - 2025-10-20
