@@ -153,8 +153,17 @@ defmodule CrucibleXAI.Global.Interaction do
       iex> Map.has_key?(result, :interpretation)
       true
   """
-  @spec interaction_strength(function(), list(list(float())), integer(), integer(), keyword()) ::
-          map()
+  @spec interaction_strength(
+          (any() -> any()),
+          list(list(float())),
+          integer(),
+          integer(),
+          Keyword.t()
+        ) :: %{
+          feature_pair: {integer(), integer()},
+          h_statistic: float(),
+          interpretation: String.t()
+        }
   def interaction_strength(predict_fn, data, feature_i, feature_j, opts \\ []) do
     h_stat = h_statistic(predict_fn, data, {feature_i, feature_j}, opts)
 
@@ -214,7 +223,7 @@ defmodule CrucibleXAI.Global.Interaction do
     # Generate all feature pairs (only valid pairs where i < j)
     pairs =
       for i <- 0..(n_features - 1),
-          j <- (i + 1)..(n_features - 1),
+          j <- (i + 1)..(n_features - 1)//1,
           i < j,
           do: {i, j}
 

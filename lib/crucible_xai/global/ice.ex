@@ -119,7 +119,15 @@ defmodule CrucibleXAI.Global.ICE do
       iex> hd(hd(centered.curves))
       0.0
   """
-  @spec centered_ice(map()) :: map()
+  @spec centered_ice(%{
+          curves: list(),
+          grid_values: any(),
+          feature_index: any()
+        }) :: %{
+          curves: list(),
+          grid_values: any(),
+          feature_index: any()
+        }
   def centered_ice(ice_result) do
     centered_curves =
       Enum.map(ice_result.curves, fn curve ->

@@ -58,7 +58,11 @@ defmodule CrucibleXAI.FeatureAttribution do
       iex> is_map(imp)
       true
   """
-  @spec permutation_importance(function(), list({list(), number()}), keyword()) :: %{
+  @spec permutation_importance(
+          (any() -> any()),
+          [{list(), number()}, ...],
+          Keyword.t()
+        ) :: %{
           integer() => %{importance: float(), std_dev: float()}
         }
   def permutation_importance(predict_fn, validation_data, opts \\ []) do

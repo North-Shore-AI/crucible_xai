@@ -212,7 +212,11 @@ defmodule CrucibleXAI.LIME.Kernels do
   ## Returns
     Nx.Tensor of shape {n_samples} with distances
   """
-  @spec calculate_distances(Nx.Tensor.t(), list() | Nx.Tensor.t(), atom()) :: Nx.Tensor.t()
+  @spec calculate_distances(
+          Nx.Tensor.t(),
+          list() | Nx.Tensor.t(),
+          :cosine | :euclidean | :manhattan
+        ) :: Nx.Tensor.t()
   def calculate_distances(samples, instance, metric \\ :euclidean) do
     case metric do
       :euclidean -> euclidean_distance(samples, instance)

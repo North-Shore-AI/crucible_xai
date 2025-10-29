@@ -66,7 +66,11 @@ defmodule CrucibleXai do
       iex> explanation.method
       :lime
   """
-  @spec explain(any(), function(), keyword()) :: Explanation.t()
+  @spec explain(
+          list() | Nx.Tensor.t(),
+          (any() -> number() | Nx.Tensor.t()),
+          Keyword.t()
+        ) :: Explanation.t()
   def explain(instance, predict_fn, opts \\ []) do
     LIME.explain(instance, predict_fn, opts)
   end
@@ -84,7 +88,11 @@ defmodule CrucibleXai do
   ## Returns
     List of `%Explanation{}` structs
   """
-  @spec explain_batch(list(), function(), keyword()) :: list(Explanation.t())
+  @spec explain_batch(
+          list(),
+          (any() -> number() | Nx.Tensor.t()),
+          Keyword.t()
+        ) :: list(Explanation.t())
   def explain_batch(instances, predict_fn, opts \\ []) do
     LIME.explain_batch(instances, predict_fn, opts)
   end
@@ -136,7 +144,11 @@ defmodule CrucibleXai do
       iex> is_map(imp)
       true
   """
-  @spec feature_importance(function(), list({list(), number()}), keyword()) :: %{
+  @spec feature_importance(
+          (any() -> any()),
+          [{list(), number()}, ...],
+          Keyword.t()
+        ) :: %{
           integer() => %{importance: float(), std_dev: float()}
         }
   def feature_importance(predict_fn, validation_data, opts \\ []) do

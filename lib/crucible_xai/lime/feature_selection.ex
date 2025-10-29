@@ -219,7 +219,7 @@ defmodule CrucibleXAI.LIME.FeatureSelection do
           list() | Nx.Tensor.t(),
           list() | Nx.Tensor.t(),
           non_neg_integer(),
-          atom()
+          :forward_selection | :highest_weights | :lasso
         ) :: list(non_neg_integer())
   def select_features(samples, labels, weights, k, method \\ :highest_weights) do
     case method do
