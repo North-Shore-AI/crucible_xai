@@ -407,6 +407,28 @@ Typical performance on M1 Mac:
 - Linear model R² scores: **>0.95** (excellent local fidelity)
 - Nonlinear model R² scores: **0.85-0.95** (good approximation)
 
+## 📚 Examples
+
+The `examples/` directory contains 10 comprehensive, runnable examples demonstrating all features:
+
+1. **01_basic_lime.exs** - Basic LIME explanation workflow
+2. **02_customized_lime.exs** - Parameter tuning and configuration
+3. **03_batch_explanations.exs** - Efficient batch processing
+4. **04_shap_explanations.exs** - SHAP values and comparison with LIME
+5. **05_feature_importance.exs** - Global feature ranking
+6. **06_visualization.exs** - HTML visualization generation
+7. **07_model_debugging.exs** - Using XAI for debugging
+8. **08_model_comparison.exs** - Comparing different models
+9. **09_nonlinear_model.exs** - Explaining complex nonlinear models
+10. **10_complete_workflow.exs** - End-to-end XAI workflow
+
+Run any example with:
+```bash
+mix run examples/01_basic_lime.exs
+```
+
+See [examples/README.md](examples/README.md) for detailed documentation.
+
 ## 🔬 Example Use Cases
 
 ### Model Debugging
