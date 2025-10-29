@@ -24,25 +24,35 @@ A production-ready Explainable AI (XAI) library for Elixir, providing model inte
 
 ### Currently Implemented
 
-- ✅ **LIME Implementation**: Full LIME algorithm with local linear approximations
-- ✅ **SHAP Implementation**: KernelSHAP with Shapley value computation
-- ✅ **Multiple Sampling Strategies**: Gaussian, Uniform, Categorical, and Combined
-- ✅ **Flexible Kernels**: Exponential and Cosine proximity weighting
-- ✅ **Feature Selection**: Highest weights, Forward selection, Lasso-approximation
-- ✅ **Interpretable Models**: Weighted Linear Regression and Ridge Regression
-- ✅ **Coalition Sampling**: Efficient SHAP coalition generation and weighting
-- ✅ **Batch Processing**: Efficient explanation of multiple instances
-- ✅ **Model-Agnostic**: Works with any prediction function
-- ✅ **High Performance**: Nx tensor operations, <50ms LIME, ~1s SHAP
-- ✅ **Feature Attribution**: Permutation importance for global feature ranking
-- ✅ **HTML Visualizations**: Interactive charts for LIME, SHAP, and comparisons
-- ✅ **Well-Tested**: 277 tests (232 unit + 34 property-based + 11 doctests), >94% coverage
-- ✅ **Parallel Processing**: Fast batch explanations with configurable concurrency
-- ✅ **Gradient Attribution**: Gradient×Input, Integrated Gradients, SmoothGrad for neural networks
-- ✅ **Occlusion Attribution**: Feature occlusion, sliding windows for model-agnostic attribution
-- ✅ **Global Interpretability**: PDP (1D/2D), ICE, ALE, H-statistic for interactions
+#### Local Attribution Methods (10 methods)
+- ✅ **LIME**: Full algorithm with Gaussian/Uniform/Categorical sampling, multiple kernels, feature selection
+- ✅ **KernelSHAP**: Model-agnostic SHAP via weighted regression (~1s, approximate)
+- ✅ **LinearSHAP**: Ultra-fast exact SHAP for linear models (<2ms, 1000x faster than Kernel)
+- ✅ **SamplingShap**: Monte Carlo SHAP approximation (~100ms, faster than Kernel)
+- ✅ **Gradient × Input**: Fast gradient-based attribution (<1ms, requires Nx)
+- ✅ **Integrated Gradients**: Axiomatic gradient method with completeness guarantee (5-50ms)
+- ✅ **SmoothGrad**: Noise-reduced gradient attribution via averaging (10-100ms)
+- ✅ **Feature Occlusion**: Model-agnostic attribution via feature removal (1-5ms per feature)
+- ✅ **Sliding Window Occlusion**: Sequential data attribution (1-10ms per window)
+- ✅ **Occlusion Sensitivity**: Normalized occlusion scores with optional absolute values
+
+#### Global Interpretability Methods (7 methods)
+- ✅ **Permutation Importance**: Global feature ranking across validation set
+- ✅ **PDP 1D**: Partial dependence plots for single features (10-50ms)
+- ✅ **PDP 2D**: Feature interaction visualization (50-200ms)
+- ✅ **ICE**: Individual conditional expectation curves (10-100ms)
+- ✅ **Centered ICE**: Relative change visualization from baseline
+- ✅ **ALE**: Accumulated local effects, robust for correlated features (10-100ms)
+- ✅ **H-Statistic**: Friedman's interaction strength detection (50-300ms per pair)
+
+#### Infrastructure & Quality
+- ✅ **Parallel Batch Processing**: LIME, SHAP, and Occlusion with configurable concurrency (40-60% faster)
+- ✅ **Model-Agnostic**: Works with any prediction function (black-box or white-box)
+- ✅ **High Performance**: Nx tensor operations throughout
+- ✅ **HTML Visualizations**: Interactive Chart.js visualizations for LIME and SHAP
+- ✅ **Well-Tested**: 277 tests (232 unit + 34 property + 11 doctests), >94% coverage
 - ✅ **Zero Warnings**: Strict compilation with comprehensive type specifications
-- ✅ **Shapley Properties**: Additivity, symmetry, and dummy properties validated
+- ✅ **Shapley Properties**: SHAP additivity, symmetry, and dummy properties validated
 
 ### Roadmap
 
@@ -58,9 +68,14 @@ Add `crucible_xai` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:crucible_xai, github: "North-Shore-AI/crucible_xai"}
+    {:crucible_xai, "~> 0.2.1"}
   ]
 end
+```
+
+Then run:
+```bash
+mix deps.get
 ```
 
 ## 🚀 Quick Start
@@ -563,14 +578,36 @@ Explanation.to_map(explanation) |> Jason.encode!()
 
 ```
 lib/crucible_xai/
-├── crucible_xai.ex                  # Public API
-├── explanation.ex                    # Explanation struct & utilities
-├── lime.ex                          # Main LIME algorithm
-└── lime/
-    ├── sampling.ex                  # Perturbation strategies
-    ├── kernels.ex                   # Proximity weighting
-    ├── interpretable_models.ex      # Linear/Ridge regression
-    └── feature_selection.ex         # Feature selection methods
+├── crucible_xai.ex                      # Public API (explain, explain_batch, explain_shap, feature_importance)
+├── explanation.ex                        # Explanation struct & utilities
+│
+├── lime.ex                              # LIME with parallel batch processing
+├── lime/
+│   ├── sampling.ex                      # Gaussian, Uniform, Categorical, Combined
+│   ├── kernels.ex                       # Exponential, Cosine kernels
+│   ├── interpretable_models.ex          # Linear Regression, Ridge
+│   └── feature_selection.ex             # Highest weights, Forward selection, Lasso
+│
+├── shap.ex                              # SHAP API (3 variants)
+├── shap/
+│   ├── kernel_shap.ex                   # Model-agnostic approximation (~1s)
+│   ├── linear_shap.ex                   # Exact for linear models (<2ms)
+│   └── sampling_shap.ex                 # Monte Carlo approximation (~100ms)
+│
+├── gradient_attribution.ex              # Gradient × Input, Integrated Gradients, SmoothGrad
+├── occlusion_attribution.ex             # Feature occlusion, Sliding Window, Sensitivity
+│
+├── global/
+│   ├── pdp.ex                           # Partial Dependence Plots (1D & 2D)
+│   ├── ice.ex                           # Individual Conditional Expectation
+│   ├── ale.ex                           # Accumulated Local Effects
+│   └── interaction.ex                   # H-Statistic for feature interactions
+│
+├── feature_attribution.ex               # Main attribution API
+├── feature_attribution/
+│   └── permutation.ex                   # Permutation importance
+│
+└── visualization.ex                     # HTML visualizations (Chart.js)
 ```
 
 ## 🧪 Testing
