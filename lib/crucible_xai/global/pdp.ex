@@ -200,8 +200,24 @@ defmodule CrucibleXAI.Global.PDP do
         Keyword.get(opts, :grid_range)
       else
         # Auto-detect range from data
-        feature_values = Enum.map(data, fn instance -> Enum.at(instance, feature_index) end)
-        {Enum.min(feature_values), Enum.max(feature_values)}
+        feature_values =
+          Enum.map(data, fn instance -> Enum.at(instance, feature_index) end)
+          |> Enum.reject(&is_nil/1)
+
+        if length(feature_values) == 0 do
+          # Default range if no data
+          {0.0, 1.0}
+        else
+          {Enum.min(feature_values), Enum.max(feature_values)}
+        end
+      end
+
+    # Handle case where min == max
+    {min_val, max_val} =
+      if abs(max_val - min_val) < 1.0e-10 do
+        {min_val - 0.5, max_val + 0.5}
+      else
+        {min_val, max_val}
       end
 
     # Create evenly spaced grid
