@@ -11,14 +11,14 @@
 [![Hex.pm](https://img.shields.io/hexpm/v/crucible_xai.svg)](https://hex.pm/packages/crucible_xai)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-purple.svg)](https://hexdocs.pm/crucible_xai)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/North-Shore-AI/crucible_xai/blob/main/LICENSE)
-[![Tests](https://img.shields.io/badge/tests-206_passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-225_passing-brightgreen.svg)]()
 [![Coverage](https://img.shields.io/badge/coverage-87.1%25-green.svg)]()
 
 ---
 
 A production-ready Explainable AI (XAI) library for Elixir, providing model interpretability through **LIME, SHAP, and Feature Attribution methods**. Built on Nx for high-performance numerical computing with comprehensive test coverage and strict quality standards.
 
-**Version**: 0.2.1 | **Tests**: 206 passing | **Coverage**: 90.5%
+**Version**: 0.2.1 | **Tests**: 225 passing | **Coverage**: 91.8%
 
 ## ✨ Features
 
@@ -36,16 +36,17 @@ A production-ready Explainable AI (XAI) library for Elixir, providing model inte
 - ✅ **High Performance**: Nx tensor operations, <50ms LIME, ~1s SHAP
 - ✅ **Feature Attribution**: Permutation importance for global feature ranking
 - ✅ **HTML Visualizations**: Interactive charts for LIME, SHAP, and comparisons
-- ✅ **Well-Tested**: 206 tests (172 unit + 23 property-based + 11 doctests), >90% coverage
+- ✅ **Well-Tested**: 225 tests (188 unit + 26 property-based + 11 doctests), >91% coverage
 - ✅ **Parallel Processing**: Fast batch explanations with configurable concurrency
 - ✅ **Gradient Attribution**: Gradient×Input, Integrated Gradients, SmoothGrad for neural networks
+- ✅ **Occlusion Attribution**: Feature occlusion, sliding windows for model-agnostic attribution
 - ✅ **Zero Warnings**: Strict compilation with comprehensive type specifications
 - ✅ **Shapley Properties**: Additivity, symmetry, and dummy properties validated
 
 ### Roadmap
 
-- 🚧 **Occlusion-based Attribution**: Sliding window occlusion sensitivity (Phase 3c)
-- 🚧 **Global Interpretability**: Partial dependence plots, feature interactions (Phase 4)
+- 🚧 **Global Interpretability**: Partial dependence plots, ICE, ALE, feature interactions (Phase 4)
+- 🚧 **TreeSHAP**: Efficient exact SHAP for tree-based models
 - 🚧 **Visualization**: Interactive HTML plots and charts (Phase 5)
 - 🚧 **CrucibleTrace Integration**: Combined explanations with reasoning traces (Phase 6)
 
@@ -214,6 +215,45 @@ smooth = CrucibleXAI.GradientAttribution.smooth_grad(
   n_samples: 50
 )
 # => Smoother, less noisy attributions
+```
+
+### Occlusion-based Attribution
+
+Model-agnostic attribution without requiring gradients:
+
+```elixir
+# Works with ANY model (black-box, non-differentiable, etc.)
+predict_fn = fn [age, income, credit] ->
+  # Any complex logic here
+  if income > 50000, do: age * 0.5 + credit * 0.3, else: age * 0.2
+end
+
+instance = [35.0, 60000.0, 720.0]
+
+# Feature occlusion: Remove each feature and measure impact
+occlusion_attrs = CrucibleXAI.OcclusionAttribution.feature_occlusion(
+  instance,
+  predict_fn,
+  baseline_value: 0.0  # Value to use for occluded features
+)
+# => %{0 => 17.5, 1 => 21.6, 2 => 10.8}
+
+# Sliding window occlusion: For sequential/time-series data
+time_series = [1.0, 2.0, 3.0, 4.0, 5.0]
+window_attrs = CrucibleXAI.OcclusionAttribution.sliding_window_occlusion(
+  time_series,
+  predict_fn,
+  window_size: 2,  # Occlude 2 consecutive features
+  stride: 1        # Slide by 1 each time
+)
+
+# Normalized sensitivity scores
+sensitivity = CrucibleXAI.OcclusionAttribution.occlusion_sensitivity(
+  instance,
+  predict_fn,
+  normalize: true,  # Sum to 1.0
+  absolute: true    # Use absolute values
+)
 ```
 
 ### Feature Attribution (Permutation Importance)

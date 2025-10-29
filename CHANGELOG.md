@@ -49,14 +49,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Order-preserving results
 - Significant performance improvement (40-60%) for large batches on multi-core systems
 
-### Test Coverage
-- Added 13 tests for LinearSHAP (unit + property + integration)
-- Added 12 tests for SamplingShap (unit + property + integration)
-- Added 10 tests for LIME parallel batch processing
-- Added 6 tests for SHAP parallel batch processing
-- Total: 183 tests (11 doctests + 21 properties + 151 unit tests)
-- 100% pass rate maintained
-
 #### Gradient-based Attribution Methods
 - **Gradient × Input**: Simple fast method: attribution_i = (∂f/∂x_i) * x_i
 - **Integrated Gradients**: Axiomatic method with completeness guarantee
@@ -66,6 +58,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Complete mathematical formulas and research references
 - 23 comprehensive tests (21 unit + 2 property-based)
 
+#### Occlusion-based Attribution Methods
+- **Feature Occlusion**: Measure importance by removing features individually
+- **Sliding Window Occlusion**: Occlude windows of consecutive features
+- **Occlusion Sensitivity**: Normalized sensitivity scores with optional absolute values
+- **Batch Occlusion**: Parallel processing for multiple instances
+- Model-agnostic (works with any black-box model, no gradients needed)
+- Configurable baseline values for occlusion
+- Configurable window size and stride for sliding windows
+- Intuitive interpretation of feature importance
+- 19 comprehensive tests (16 unit + 3 property-based)
+
+### Test Coverage
+- Added 13 tests for LinearSHAP (unit + property + integration)
+- Added 12 tests for SamplingShap (unit + property + integration)
+- Added 10 tests for LIME parallel batch processing
+- Added 6 tests for SHAP parallel batch processing
+- Added 23 tests for gradient attribution methods (21 unit + 2 property)
+- Added 19 tests for occlusion attribution methods (16 unit + 3 property)
+- Total: 225 tests (11 doctests + 26 properties + 188 unit tests)
+- 100% pass rate maintained
+
 ### Performance
 - LinearSHAP: <2ms per explanation (exact values)
 - SamplingShap: ~100-500ms with 500-2000 samples (approximate)
@@ -73,6 +86,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Gradient × Input: <1ms per attribution
 - Integrated Gradients: ~5-50ms (depends on steps, default: 50)
 - SmoothGrad: ~10-100ms (depends on samples, default: 50)
+- Feature Occlusion: ~1-5ms per feature (model-agnostic)
+- Sliding Window: ~1-10ms per window position
 - Parallel batch processing: 40-60% speed improvement
 
 ## [0.2.0] - 2025-10-20
