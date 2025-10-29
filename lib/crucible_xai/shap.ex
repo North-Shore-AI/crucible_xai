@@ -115,7 +115,11 @@ defmodule CrucibleXAI.SHAP do
     * `instances` - List of instances to explain
     * `background_data` - Background dataset
     * `predict_fn` - Prediction function
-    * `opts` - Options (same as `explain/4`)
+    * `opts` - Options (same as `explain/4` plus batch options):
+      * `:parallel` - Enable parallel processing (default: false)
+      * `:max_concurrency` - Max concurrent tasks (default: System.schedulers_online())
+      * `:timeout` - Timeout per instance in ms (default: 30_000)
+      * `:on_error` - Error handling: `:skip` or `:raise` (default: `:raise`)
 
   ## Returns
     List of maps with SHAP values for each instance
@@ -127,12 +131,76 @@ defmodule CrucibleXAI.SHAP do
       iex> shap_list = CrucibleXAI.SHAP.explain_batch(instances, background, predict_fn, num_samples: 500)
       iex> length(shap_list)
       3
+
+      # Parallel processing
+      iex> shap_list = CrucibleXAI.SHAP.explain_batch(instances, background, predict_fn, num_samples: 500, parallel: true)
+      iex> length(shap_list)
+      3
   """
   @spec explain_batch(list(), list(), function(), keyword()) :: list(%{integer() => float()})
   def explain_batch(instances, background_data, predict_fn, opts \\ []) do
+    parallel = Keyword.get(opts, :parallel, false)
+
+    if parallel do
+      explain_batch_parallel(instances, background_data, predict_fn, opts)
+    else
+      explain_batch_sequential(instances, background_data, predict_fn, opts)
+    end
+  end
+
+  # Private batch processing functions
+
+  defp explain_batch_sequential(instances, background_data, predict_fn, opts) do
     Enum.map(instances, fn instance ->
       explain(instance, background_data, predict_fn, opts)
     end)
+  end
+
+  defp explain_batch_parallel(instances, background_data, predict_fn, opts) do
+    max_concurrency = Keyword.get(opts, :max_concurrency, System.schedulers_online())
+    timeout = Keyword.get(opts, :timeout, 30_000)
+    on_error = Keyword.get(opts, :on_error, :raise)
+
+    instances
+    |> Task.async_stream(
+      fn instance ->
+        try do
+          {:ok, explain(instance, background_data, predict_fn, opts)}
+        rescue
+          e -> {:error, e}
+        catch
+          :exit, reason -> {:error, {:exit, reason}}
+        end
+      end,
+      max_concurrency: max_concurrency,
+      timeout: timeout,
+      on_timeout: :kill_task
+    )
+    |> Enum.reduce([], fn
+      {:ok, {:ok, shap_values}}, acc ->
+        [shap_values | acc]
+
+      {:ok, {:error, reason}}, acc ->
+        case on_error do
+          :skip ->
+            Logger.warning("SHAP explanation failed: #{inspect(reason)}")
+            acc
+
+          :raise ->
+            raise "SHAP explanation failed: #{inspect(reason)}"
+        end
+
+      {:exit, reason}, acc ->
+        case on_error do
+          :skip ->
+            Logger.warning("SHAP explanation timed out: #{inspect(reason)}")
+            acc
+
+          :raise ->
+            raise "SHAP explanation timed out: #{inspect(reason)}"
+        end
+    end)
+    |> Enum.reverse()
   end
 
   @doc """

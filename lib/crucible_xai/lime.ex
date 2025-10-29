@@ -158,7 +158,11 @@ defmodule CrucibleXAI.LIME do
   ## Parameters
     * `instances` - List of instances to explain
     * `predict_fn` - Prediction function
-    * `opts` - Options (same as `explain/3`)
+    * `opts` - Options (same as `explain/3` plus batch options):
+      * `:parallel` - Enable parallel processing (default: false)
+      * `:max_concurrency` - Max concurrent tasks (default: System.schedulers_online())
+      * `:timeout` - Timeout per instance in ms (default: 30_000)
+      * `:on_error` - Error handling: `:skip` or `:raise` (default: `:raise`)
 
   ## Returns
     List of `%Explanation{}` structs
@@ -171,12 +175,76 @@ defmodule CrucibleXAI.LIME do
       3
       iex> Enum.all?(explanations, fn exp -> exp.method == :lime end)
       true
+
+      # Parallel processing for faster batch explanations
+      iex> explanations = CrucibleXAI.LIME.explain_batch(instances, predict_fn, num_samples: 50, parallel: true)
+      iex> length(explanations)
+      3
   """
   @spec explain_batch(list(), predict_fn(), keyword()) :: list(Explanation.t())
   def explain_batch(instances, predict_fn, opts \\ []) do
+    parallel = Keyword.get(opts, :parallel, false)
+
+    if parallel do
+      explain_batch_parallel(instances, predict_fn, opts)
+    else
+      explain_batch_sequential(instances, predict_fn, opts)
+    end
+  end
+
+  # Private batch processing functions
+
+  defp explain_batch_sequential(instances, predict_fn, opts) do
     Enum.map(instances, fn instance ->
       explain(instance, predict_fn, opts)
     end)
+  end
+
+  defp explain_batch_parallel(instances, predict_fn, opts) do
+    max_concurrency = Keyword.get(opts, :max_concurrency, System.schedulers_online())
+    timeout = Keyword.get(opts, :timeout, 30_000)
+    on_error = Keyword.get(opts, :on_error, :raise)
+
+    instances
+    |> Task.async_stream(
+      fn instance ->
+        try do
+          {:ok, explain(instance, predict_fn, opts)}
+        rescue
+          e -> {:error, e}
+        catch
+          :exit, reason -> {:error, {:exit, reason}}
+        end
+      end,
+      max_concurrency: max_concurrency,
+      timeout: timeout,
+      on_timeout: :kill_task
+    )
+    |> Enum.reduce([], fn
+      {:ok, {:ok, explanation}}, acc ->
+        [explanation | acc]
+
+      {:ok, {:error, reason}}, acc ->
+        case on_error do
+          :skip ->
+            Logger.warning("Explanation failed: #{inspect(reason)}")
+            acc
+
+          :raise ->
+            raise "Explanation failed: #{inspect(reason)}"
+        end
+
+      {:exit, reason}, acc ->
+        case on_error do
+          :skip ->
+            Logger.warning("Explanation timed out: #{inspect(reason)}")
+            acc
+
+          :raise ->
+            raise "Explanation timed out: #{inspect(reason)}"
+        end
+    end)
+    |> Enum.reverse()
   end
 
   # Private helper functions

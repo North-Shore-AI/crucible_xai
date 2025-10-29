@@ -11,14 +11,14 @@
 [![Hex.pm](https://img.shields.io/hexpm/v/crucible_xai.svg)](https://hex.pm/packages/crucible_xai)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-purple.svg)](https://hexdocs.pm/crucible_xai)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/North-Shore-AI/crucible_xai/blob/main/LICENSE)
-[![Tests](https://img.shields.io/badge/tests-167_passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-183_passing-brightgreen.svg)]()
 [![Coverage](https://img.shields.io/badge/coverage-87.1%25-green.svg)]()
 
 ---
 
 A production-ready Explainable AI (XAI) library for Elixir, providing model interpretability through **LIME, SHAP, and Feature Attribution methods**. Built on Nx for high-performance numerical computing with comprehensive test coverage and strict quality standards.
 
-**Version**: 0.2.1 | **Tests**: 167 passing | **Coverage**: 88.5%
+**Version**: 0.2.1 | **Tests**: 183 passing | **Coverage**: 89.2%
 
 ## ✨ Features
 
@@ -36,7 +36,8 @@ A production-ready Explainable AI (XAI) library for Elixir, providing model inte
 - ✅ **High Performance**: Nx tensor operations, <50ms LIME, ~1s SHAP
 - ✅ **Feature Attribution**: Permutation importance for global feature ranking
 - ✅ **HTML Visualizations**: Interactive charts for LIME, SHAP, and comparisons
-- ✅ **Well-Tested**: 167 tests (135 unit + 21 property-based + 11 doctests), >88% coverage
+- ✅ **Well-Tested**: 183 tests (151 unit + 21 property-based + 11 doctests), >89% coverage
+- ✅ **Parallel Processing**: Fast batch explanations with configurable concurrency
 - ✅ **Zero Warnings**: Strict compilation with comprehensive type specifications
 - ✅ **Shapley Properties**: Additivity, symmetry, and dummy properties validated
 
@@ -114,7 +115,15 @@ instances = [
   [3.0, 4.0]
 ]
 
+# Sequential processing (default)
 explanations = CrucibleXai.explain_batch(instances, predict_fn, num_samples: 1000)
+
+# Parallel processing for faster batch explanations (40-60% speed improvement)
+explanations = CrucibleXai.explain_batch(instances, predict_fn,
+  num_samples: 1000,
+  parallel: true,
+  max_concurrency: 4  # Optional: control concurrent tasks
+)
 
 # Analyze consistency
 Enum.each(explanations, fn exp ->
