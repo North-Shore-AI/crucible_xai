@@ -7,8 +7,10 @@
 **Explainable AI (XAI) Library for Elixir**
 
 [![Elixir](https://img.shields.io/badge/elixir-1.14+-purple.svg)](https://elixir-lang.org)
-[![OTP](https://img.shields.io/badge/otp-25+-red.svg)](https://www.erlang.org)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/North-Shore-AI/crucible_xai/blob/main/LICENSE)
+[![OTP](https://img.shields.io/badge/otp-25+-blue.svg)](https://www.erlang.org)
+[![Hex.pm](https://img.shields.io/hexpm/v/crucible_xai.svg)](https://hex.pm/packages/crucible_xai)
+[![Documentation](https://img.shields.io/badge/docs-hexdocs-purple.svg)](https://hexdocs.pm/crucible_xai)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/North-Shore-AI/crucible_xai/blob/main/LICENSE)
 [![Tests](https://img.shields.io/badge/tests-141_passing-brightgreen.svg)]()
 [![Coverage](https://img.shields.io/badge/coverage-87.1%25-green.svg)]()
 
