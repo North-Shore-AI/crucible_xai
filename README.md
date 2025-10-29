@@ -11,14 +11,14 @@
 [![Hex.pm](https://img.shields.io/hexpm/v/crucible_xai.svg)](https://hex.pm/packages/crucible_xai)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-purple.svg)](https://hexdocs.pm/crucible_xai)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/North-Shore-AI/crucible_xai/blob/main/LICENSE)
-[![Tests](https://img.shields.io/badge/tests-183_passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-206_passing-brightgreen.svg)]()
 [![Coverage](https://img.shields.io/badge/coverage-87.1%25-green.svg)]()
 
 ---
 
 A production-ready Explainable AI (XAI) library for Elixir, providing model interpretability through **LIME, SHAP, and Feature Attribution methods**. Built on Nx for high-performance numerical computing with comprehensive test coverage and strict quality standards.
 
-**Version**: 0.2.1 | **Tests**: 183 passing | **Coverage**: 89.2%
+**Version**: 0.2.1 | **Tests**: 206 passing | **Coverage**: 90.5%
 
 ## ✨ Features
 
@@ -36,14 +36,14 @@ A production-ready Explainable AI (XAI) library for Elixir, providing model inte
 - ✅ **High Performance**: Nx tensor operations, <50ms LIME, ~1s SHAP
 - ✅ **Feature Attribution**: Permutation importance for global feature ranking
 - ✅ **HTML Visualizations**: Interactive charts for LIME, SHAP, and comparisons
-- ✅ **Well-Tested**: 183 tests (151 unit + 21 property-based + 11 doctests), >89% coverage
+- ✅ **Well-Tested**: 206 tests (172 unit + 23 property-based + 11 doctests), >90% coverage
 - ✅ **Parallel Processing**: Fast batch explanations with configurable concurrency
+- ✅ **Gradient Attribution**: Gradient×Input, Integrated Gradients, SmoothGrad for neural networks
 - ✅ **Zero Warnings**: Strict compilation with comprehensive type specifications
 - ✅ **Shapley Properties**: Additivity, symmetry, and dummy properties validated
 
 ### Roadmap
 
-- 🚧 **Gradient-based Attribution**: Gradient×Input, Integrated Gradients (Phase 3b)
 - 🚧 **Occlusion-based Attribution**: Sliding window occlusion sensitivity (Phase 3c)
 - 🚧 **Global Interpretability**: Partial dependence plots, feature interactions (Phase 4)
 - 🚧 **Visualization**: Interactive HTML plots and charts (Phase 5)
@@ -177,6 +177,43 @@ shap_sum = Enum.sum(Map.values(shap_values))
 # Verify with built-in validator
 is_valid = CrucibleXAI.SHAP.verify_additivity(shap_values, instance, background, predict_fn)
 # => true
+```
+
+### Gradient-based Attribution
+
+For neural networks and differentiable models built with Nx:
+
+```elixir
+# Define a differentiable model
+model_fn = fn params ->
+  # Example: f(x, y) = x^2 + 2*y^2
+  Nx.sum(Nx.add(Nx.pow(params[0], 2), Nx.multiply(2.0, Nx.pow(params[1], 2))))
+end
+
+instance = Nx.tensor([3.0, 4.0])
+
+# Method 1: Gradient × Input (fastest, simplest)
+grad_input = CrucibleXAI.GradientAttribution.gradient_x_input(model_fn, instance)
+# => Tensor showing feature attributions
+
+# Method 2: Integrated Gradients (most principled, satisfies completeness axiom)
+baseline = Nx.tensor([0.0, 0.0])
+integrated = CrucibleXAI.GradientAttribution.integrated_gradients(
+  model_fn,
+  instance,
+  baseline,
+  steps: 50
+)
+# Verify: sum(integrated) ≈ f(instance) - f(baseline)
+
+# Method 3: SmoothGrad (reduces noise via averaging)
+smooth = CrucibleXAI.GradientAttribution.smooth_grad(
+  model_fn,
+  instance,
+  noise_level: 0.15,
+  n_samples: 50
+)
+# => Smoother, less noisy attributions
 ```
 
 ### Feature Attribution (Permutation Importance)

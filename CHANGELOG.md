@@ -8,7 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned for v0.3.0
-- Gradient-based attribution (Gradient×Input, Integrated Gradients)
 - Occlusion-based attribution methods
 - Global interpretability (Partial Dependence Plots, ICE)
 - Feature interaction detection (H-statistic)
@@ -58,10 +57,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Total: 183 tests (11 doctests + 21 properties + 151 unit tests)
 - 100% pass rate maintained
 
+#### Gradient-based Attribution Methods
+- **Gradient × Input**: Simple fast method: attribution_i = (∂f/∂x_i) * x_i
+- **Integrated Gradients**: Axiomatic method with completeness guarantee
+- **SmoothGrad**: Noise-reduced attributions via averaging noisy gradients
+- Full automatic differentiation using Nx.Defn.grad
+- Configurable parameters for all gradient methods
+- Complete mathematical formulas and research references
+- 23 comprehensive tests (21 unit + 2 property-based)
+
 ### Performance
 - LinearSHAP: <2ms per explanation (exact values)
 - SamplingShap: ~100-500ms with 500-2000 samples (approximate)
 - KernelSHAP: ~1s with 2000 coalitions (approximate)
+- Gradient × Input: <1ms per attribution
+- Integrated Gradients: ~5-50ms (depends on steps, default: 50)
+- SmoothGrad: ~10-100ms (depends on samples, default: 50)
+- Parallel batch processing: 40-60% speed improvement
 
 ## [0.2.0] - 2025-10-20
 
