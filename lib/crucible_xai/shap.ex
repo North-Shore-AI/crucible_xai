@@ -19,6 +19,8 @@ defmodule CrucibleXAI.SHAP do
   ## Methods
 
   - `KernelSHAP` - Model-agnostic approximation using weighted regression
+  - `LinearSHAP` - Fast exact computation for linear models
+  - `SamplingShap` - Fast Monte Carlo approximation via random sampling
   - `TreeSHAP` - Efficient exact computation for tree models (future)
 
   ## References
@@ -42,6 +44,8 @@ defmodule CrucibleXAI.SHAP do
   """
 
   alias CrucibleXAI.SHAP.KernelSHAP
+  alias CrucibleXAI.SHAP.LinearSHAP
+  alias CrucibleXAI.SHAP.SamplingShap
 
   require Logger
 
@@ -62,9 +66,11 @@ defmodule CrucibleXAI.SHAP do
     * `background_data` - Background dataset for baseline (list of instances)
     * `predict_fn` - Prediction function
     * `opts` - Options:
-      * `:method` - SHAP method (default: `:kernel_shap`)
-      * `:num_samples` - Number of coalitions for KernelSHAP (default: 2000)
-      * `:regularization` - Regularization strength (default: 0.01)
+      * `:method` - SHAP method (default: `:kernel_shap`). Available: `:kernel_shap`, `:linear_shap`, `:sampling_shap`
+      * `:num_samples` - Number of samples: coalitions for KernelSHAP, permutations for SamplingShap (default: 2000)
+      * `:regularization` - Regularization strength for KernelSHAP (default: 0.01)
+      * `:coefficients` - Model coefficients (required for `:linear_shap`)
+      * `:intercept` - Model intercept (required for `:linear_shap`)
 
   ## Returns
     Map of feature_index => shapley_value
@@ -87,6 +93,15 @@ defmodule CrucibleXAI.SHAP do
     case method do
       :kernel_shap ->
         KernelSHAP.explain(instance, background_data, predict_fn, opts)
+
+      :linear_shap ->
+        # For linear models, extract coefficients and intercept from opts
+        coefficients = Keyword.fetch!(opts, :coefficients)
+        intercept = Keyword.get(opts, :intercept, 0.0)
+        LinearSHAP.explain(instance, background_data, coefficients, intercept)
+
+      :sampling_shap ->
+        SamplingShap.explain(instance, background_data, predict_fn, opts)
 
       _ ->
         raise ArgumentError, "Unknown SHAP method: #{inspect(method)}"

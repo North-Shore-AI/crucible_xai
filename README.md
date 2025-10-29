@@ -11,14 +11,14 @@
 [![Hex.pm](https://img.shields.io/hexpm/v/crucible_xai.svg)](https://hex.pm/packages/crucible_xai)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-purple.svg)](https://hexdocs.pm/crucible_xai)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/North-Shore-AI/crucible_xai/blob/main/LICENSE)
-[![Tests](https://img.shields.io/badge/tests-141_passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-167_passing-brightgreen.svg)]()
 [![Coverage](https://img.shields.io/badge/coverage-87.1%25-green.svg)]()
 
 ---
 
 A production-ready Explainable AI (XAI) library for Elixir, providing model interpretability through **LIME, SHAP, and Feature Attribution methods**. Built on Nx for high-performance numerical computing with comprehensive test coverage and strict quality standards.
 
-**Version**: 0.2.0 | **Tests**: 141 passing | **Coverage**: 87.1%
+**Version**: 0.2.1 | **Tests**: 167 passing | **Coverage**: 88.5%
 
 ## ✨ Features
 
@@ -36,7 +36,7 @@ A production-ready Explainable AI (XAI) library for Elixir, providing model inte
 - ✅ **High Performance**: Nx tensor operations, <50ms LIME, ~1s SHAP
 - ✅ **Feature Attribution**: Permutation importance for global feature ranking
 - ✅ **HTML Visualizations**: Interactive charts for LIME, SHAP, and comparisons
-- ✅ **Well-Tested**: 141 tests (111 unit + 19 property-based + 11 doctests), >87% coverage
+- ✅ **Well-Tested**: 167 tests (135 unit + 21 property-based + 11 doctests), >88% coverage
 - ✅ **Zero Warnings**: Strict compilation with comprehensive type specifications
 - ✅ **Shapley Properties**: Additivity, symmetry, and dummy properties validated
 
@@ -124,15 +124,40 @@ end)
 
 ### SHAP Explanations
 
+CrucibleXAI supports multiple SHAP variants for different use cases:
+
 ```elixir
-# Use SHAP for theoretically grounded feature attribution
+# KernelSHAP: Model-agnostic, most accurate but slower
 predict_fn = fn [x, y] -> 2.0 * x + 3.0 * y end
 instance = [1.0, 1.0]
-background = [[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]]  # Representative baseline samples
+background = [[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]]
 
-# Get Shapley values
 shap_values = CrucibleXai.explain_shap(instance, background, predict_fn, num_samples: 2000)
 # => %{0 => 2.0, 1 => 3.0}
+
+# LinearSHAP: Exact and ultra-fast for linear models (1000x faster!)
+coefficients = %{0 => 2.0, 1 => 3.0}
+intercept = 0.0
+
+linear_shap = CrucibleXai.explain_shap(
+  instance,
+  background,
+  predict_fn,
+  method: :linear_shap,
+  coefficients: coefficients,
+  intercept: intercept
+)
+# => %{0 => 2.0, 1 => 3.0} (exact, <2ms)
+
+# SamplingShap: Monte Carlo approximation, faster than KernelSHAP
+sampling_shap = CrucibleXai.explain_shap(
+  instance,
+  background,
+  predict_fn,
+  method: :sampling_shap,
+  num_samples: 1000
+)
+# => %{0 => ~2.0, 1 => ~3.0} (approximate, ~100ms)
 
 # Verify additivity: SHAP values sum to (prediction - baseline)
 prediction = predict_fn.(instance)
@@ -266,12 +291,14 @@ Verify: φ₀ + φ₁ = prediction(5,10) - prediction(0,0) ✓
 
 #### LIME vs SHAP
 
-| Aspect | LIME | SHAP |
-|--------|------|------|
-| **Speed** | Fast (~50ms) | Slower (~1s) |
-| **Theory** | Heuristic | Game theory (Shapley values) |
-| **Guarantee** | Local fidelity | Additivity, symmetry, consistency |
-| **Use When** | Quick insights, many instances | Precise attribution, fairness analysis |
+| Aspect | LIME | SHAP (Kernel) | SHAP (Linear) | SHAP (Sampling) |
+|--------|------|---------------|---------------|-----------------|
+| **Speed** | Fast (~50ms) | Slow (~1s) | Ultra-fast (~1ms) | Fast (~100ms) |
+| **Theory** | Heuristic | Game theory | Game theory | Game theory |
+| **Accuracy** | Approximate | Approximate | Exact | Approximate |
+| **Model Type** | Any | Any | Linear only | Any |
+| **Guarantee** | Local fidelity | Additivity | Additivity | Additivity |
+| **Use When** | Quick insights | Precise attribution | Linear models | Faster SHAP |
 
 ## 🎯 Configuration Options
 

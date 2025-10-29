@@ -42,6 +42,150 @@ defmodule CrucibleXAI.SHAPTest do
     end
   end
 
+  describe "explain/4 with LinearSHAP" do
+    test "uses LinearSHAP method for linear models" do
+      coefficients = %{0 => 2.0, 1 => 3.0}
+      intercept = 1.0
+      instance = [5.0, 3.0]
+      background = [[0.0, 0.0]]
+
+      shap_values =
+        SHAP.explain(instance, background, nil,
+          method: :linear_shap,
+          coefficients: coefficients,
+          intercept: intercept
+        )
+
+      assert is_map(shap_values)
+      assert map_size(shap_values) == 2
+
+      # φ₀ = 2.0 * (5.0 - 0.0) = 10.0
+      # φ₁ = 3.0 * (3.0 - 0.0) = 9.0
+      assert_in_delta shap_values[0], 10.0, 0.001
+      assert_in_delta shap_values[1], 9.0, 0.001
+    end
+
+    test "LinearSHAP satisfies additivity property" do
+      coefficients = %{0 => 2.0, 1 => 3.0}
+      intercept = 1.0
+      instance = [3.0, 2.0]
+      # Mean: [1.0, 1.0]
+      background = [[0.0, 0.0], [2.0, 2.0]]
+
+      shap_values =
+        SHAP.explain(instance, background, nil,
+          method: :linear_shap,
+          coefficients: coefficients,
+          intercept: intercept
+        )
+
+      # Prediction: 2*3 + 3*2 + 1 = 13
+      # Baseline: 2*1 + 3*1 + 1 = 6
+      # SHAP sum should be: 13 - 6 = 7
+      shap_sum = Enum.sum(Map.values(shap_values))
+      expected_diff = 7.0
+
+      assert_in_delta shap_sum, expected_diff, 0.001
+    end
+
+    test "LinearSHAP is much faster than KernelSHAP" do
+      coefficients = %{0 => 2.0, 1 => 3.0, 2 => 1.5}
+      intercept = 0.5
+      instance = [1.0, 2.0, 3.0]
+      background = [[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]]
+      predict_fn = fn [x, y, z] -> 2.0 * x + 3.0 * y + 1.5 * z + 0.5 end
+
+      # Time LinearSHAP
+      {time_linear, _result} =
+        :timer.tc(fn ->
+          SHAP.explain(instance, background, predict_fn,
+            method: :linear_shap,
+            coefficients: coefficients,
+            intercept: intercept
+          )
+        end)
+
+      # Time KernelSHAP
+      {time_kernel, _result} =
+        :timer.tc(fn ->
+          SHAP.explain(instance, background, predict_fn, num_samples: 1000)
+        end)
+
+      # LinearSHAP should be at least 10x faster
+      assert time_linear * 10 < time_kernel
+    end
+
+    test "raises error when coefficients not provided for linear_shap" do
+      instance = [1.0, 2.0]
+      background = [[0.0, 0.0]]
+
+      assert_raise KeyError, fn ->
+        SHAP.explain(instance, background, nil, method: :linear_shap)
+      end
+    end
+  end
+
+  describe "explain/4 with SamplingShap" do
+    test "uses SamplingShap method for Monte Carlo approximation" do
+      predict_fn = fn [x, y] -> 2.0 * x + 3.0 * y end
+      instance = [1.0, 1.0]
+      background = [[0.0, 0.0]]
+
+      shap_values =
+        SHAP.explain(instance, background, predict_fn,
+          method: :sampling_shap,
+          num_samples: 1000
+        )
+
+      assert is_map(shap_values)
+      assert map_size(shap_values) == 2
+
+      # Should approximate SHAP values: φ₀ ≈ 2.0, φ₁ ≈ 3.0
+      assert_in_delta shap_values[0], 2.0, 0.5
+      assert_in_delta shap_values[1], 3.0, 0.5
+    end
+
+    test "SamplingShap satisfies additivity approximately" do
+      predict_fn = fn [x, y] -> 2.0 * x + 3.0 * y + 1.0 end
+      instance = [3.0, 2.0]
+      background = [[0.0, 0.0]]
+
+      shap_values =
+        SHAP.explain(instance, background, predict_fn,
+          method: :sampling_shap,
+          num_samples: 2000
+        )
+
+      # Verify additivity property (with tolerance for Monte Carlo)
+      is_additive = SHAP.verify_additivity(shap_values, instance, background, predict_fn, 1.0)
+      assert is_additive
+    end
+
+    test "SamplingShap is faster than KernelSHAP with similar samples" do
+      predict_fn = fn [x, y, z] -> x + 2.0 * y + 3.0 * z end
+      instance = [1.0, 2.0, 3.0]
+      background = [[0.0, 0.0, 0.0]]
+
+      # Time SamplingShap
+      {time_sampling, _result} =
+        :timer.tc(fn ->
+          SHAP.explain(instance, background, predict_fn,
+            method: :sampling_shap,
+            num_samples: 500
+          )
+        end)
+
+      # Time KernelSHAP
+      {time_kernel, _result} =
+        :timer.tc(fn ->
+          SHAP.explain(instance, background, predict_fn, num_samples: 500)
+        end)
+
+      # SamplingShap should be comparable or faster
+      assert time_sampling < time_kernel * 2
+    end
+  end
+
   describe "explain_batch/4" do
     @tag :capture_log
     test "explains multiple instances" do

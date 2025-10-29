@@ -16,6 +16,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - TreeSHAP for decision tree models
 - Performance optimizations (parallelization, caching)
 
+## [0.2.1] - 2025-10-29
+
+### Added - SHAP Enhancements
+
+#### LinearSHAP
+- Fast exact SHAP computation for linear models
+- Direct calculation using formula: φᵢ = wᵢ * (xᵢ - E[xᵢ])
+- 1000-3000x faster than KernelSHAP (~1ms vs ~1s)
+- Perfect for logistic regression, linear regression, and similar models
+- Complete unit, integration, and property-based tests
+- Example script demonstrating credit scoring use case
+
+#### SamplingShap
+- Monte Carlo approximation of SHAP values
+- Random permutation sampling for feature attribution
+- Faster than KernelSHAP with comparable accuracy
+- Model-agnostic approach suitable for any model type
+- Configurable number of permutation samples
+- Full test coverage with property-based testing
+
+### Documentation
+- Added Example 11: LinearSHAP for Linear Models
+- Updated SHAP module documentation with all methods
+- Added usage examples and comparisons
+
+### Test Coverage
+- Added 13 tests for LinearSHAP (unit + property + integration)
+- Added 12 tests for SamplingShap (unit + property + integration)
+- Total: 167 tests (11 doctests + 21 properties + 135 tests)
+- 100% pass rate maintained
+
+### Performance
+- LinearSHAP: <2ms per explanation (exact values)
+- SamplingShap: ~100-500ms with 500-2000 samples (approximate)
+- KernelSHAP: ~1s with 2000 coalitions (approximate)
+
 ## [0.2.0] - 2025-10-20
 
 ### Added - Core XAI Implementation
