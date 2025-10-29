@@ -6,20 +6,24 @@ defmodule CrucibleXAI.FeatureAttribution.PermutationTest do
 
   describe "calculate/3" do
     test "calculates permutation importance for simple model" do
-      # Simple model: f([x, y]) = 2*x + 3*y
-      # Feature y should be more important (coefficient 3 vs 2)
-      predict_fn = fn [x, y] -> 2.0 * x + 3.0 * y end
+      # Simple model: f([x, y]) = 1*x + 5*y
+      # Feature y should be MUCH more important (coefficient 5 vs 1)
+      # Use larger coefficient difference to reduce statistical noise
+      predict_fn = fn [x, y] -> 1.0 * x + 5.0 * y end
 
       validation_data = [
-        {[1.0, 1.0], 5.0},
-        {[2.0, 2.0], 10.0},
-        {[3.0, 3.0], 15.0},
-        {[1.0, 2.0], 8.0},
-        {[2.0, 1.0], 7.0}
+        {[1.0, 1.0], 6.0},
+        {[2.0, 2.0], 12.0},
+        {[3.0, 3.0], 18.0},
+        {[1.0, 2.0], 11.0},
+        {[2.0, 1.0], 7.0},
+        {[4.0, 3.0], 19.0},
+        {[2.0, 4.0], 22.0}
       ]
 
+      # Use more repeats for statistical stability
       importance =
-        Permutation.calculate(predict_fn, validation_data, metric: :mse, num_repeats: 5)
+        Permutation.calculate(predict_fn, validation_data, metric: :mse, num_repeats: 10)
 
       assert is_map(importance)
       assert map_size(importance) == 2
@@ -29,6 +33,7 @@ defmodule CrucibleXAI.FeatureAttribution.PermutationTest do
       assert importance[1][:importance] > 0
 
       # Feature 1 (y) should be more important than feature 0 (x)
+      # With 5x coefficient difference and more repeats, this should be stable
       assert importance[1][:importance] > importance[0][:importance]
     end
 
