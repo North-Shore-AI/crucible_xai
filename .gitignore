@@ -24,3 +24,5 @@ crucible_xai-*/
 
 # Temporary files, for example, from tests.
 /tmp/
+
+repomix*.xml
