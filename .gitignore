@@ -25,4 +25,7 @@ crucible_xai-*/
 # Temporary files, for example, from tests.
 /tmp/
 
+# Dialyzer PLT cache
+priv/plts/
+
 repomix*.xml
