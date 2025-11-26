@@ -33,7 +33,9 @@ defmodule CrucibleXai do
   ## Main Modules
 
   - `CrucibleXai.LIME` - LIME explanations
+  - `CrucibleXai.SHAP` - SHAP (Shapley values) explanations
   - `CrucibleXai.Explanation` - Explanation structure and utilities
+  - `CrucibleXai.Validation` - Explanation quality metrics and validation (v0.3.0+)
   - `CrucibleXai.LIME.Sampling` - Data perturbation strategies
   - `CrucibleXai.LIME.Kernels` - Proximity weighting functions
   - `CrucibleXai.LIME.InterpretableModels` - Linear regression models
@@ -45,7 +47,7 @@ defmodule CrucibleXai do
     "Why Should I Trust You?": Explaining the Predictions of Any Classifier. KDD.
   """
 
-  alias CrucibleXAI.{LIME, SHAP, FeatureAttribution, Explanation}
+  alias CrucibleXAI.{LIME, SHAP, FeatureAttribution, Explanation, Validation}
 
   @doc """
   Explain a model prediction using LIME.
@@ -154,4 +156,111 @@ defmodule CrucibleXai do
   def feature_importance(predict_fn, validation_data, opts \\ []) do
     FeatureAttribution.permutation_importance(predict_fn, validation_data, opts)
   end
+
+  @doc """
+  Validate an explanation comprehensively.
+
+  Measures explanation quality across multiple dimensions: faithfulness,
+  infidelity, sensitivity, and axiom compliance.
+
+  New in v0.3.0.
+
+  ## Parameters
+    * `explanation` - Explanation struct to validate
+    * `instance` - Instance that was explained
+    * `predict_fn` - Prediction function
+    * `opts` - Options (see `CrucibleXAI.Validation` for details)
+
+  ## Returns
+    Map with validation results and quality score
+
+  ## Examples
+      iex> explanation = CrucibleXai.explain([5.0, 10.0], fn [x, y] -> 2.0 * x + 3.0 * y end)
+      iex> validation = CrucibleXai.validate_explanation(explanation, [5.0, 10.0], fn [x, y] -> 2.0 * x + 3.0 * y end)
+      iex> is_map(validation)
+      true
+      iex> Map.has_key?(validation, :quality_score)
+      true
+  """
+  @spec validate_explanation(
+          Explanation.t(),
+          list(),
+          (any() -> any()),
+          keyword()
+        ) :: Validation.comprehensive_report()
+  def validate_explanation(explanation, instance, predict_fn, opts \\ []) do
+    Validation.comprehensive_validation(explanation, instance, predict_fn, opts)
+  end
+
+  @doc """
+  Quick validation for production use.
+
+  Fast quality check using faithfulness and infidelity metrics only.
+
+  New in v0.3.0.
+
+  ## Parameters
+    * `explanation` - Explanation struct to validate
+    * `instance` - Instance that was explained
+    * `predict_fn` - Prediction function
+    * `opts` - Options
+
+  ## Returns
+    Map with quality scores and pass/fail status
+
+  ## Examples
+      iex> explanation = CrucibleXai.explain([5.0], fn [x] -> x * 2.0 end)
+      iex> quick = CrucibleXai.quick_validate(explanation, [5.0], fn [x] -> x * 2.0 end)
+      iex> is_boolean(quick.passes_quality_gate)
+      true
+  """
+  @spec quick_validate(Explanation.t(), list(), (any() -> any()), keyword()) ::
+          Validation.quick_report()
+  def quick_validate(explanation, instance, predict_fn, opts \\ []) do
+    Validation.quick_validation(explanation, instance, predict_fn, opts)
+  end
+
+  @doc """
+  Measure faithfulness of an explanation.
+
+  Tests whether removing important features causes proportional prediction changes.
+
+  New in v0.3.0.
+
+  ## Parameters
+    * `instance` - Instance explained
+    * `explanation` - Explanation struct
+    * `predict_fn` - Prediction function
+    * `opts` - Options
+
+  ## Returns
+    Map with faithfulness score and details
+  """
+  @spec measure_faithfulness(list(), Explanation.t(), (any() -> any()), keyword()) ::
+          Validation.Faithfulness.faithfulness_result()
+  defdelegate measure_faithfulness(instance, explanation, predict_fn, opts \\ []),
+    to: Validation.Faithfulness,
+    as: :measure_faithfulness
+
+  @doc """
+  Compute infidelity score.
+
+  Measures explanation error via perturbation-based testing.
+
+  New in v0.3.0.
+
+  ## Parameters
+    * `instance` - Instance explained
+    * `attributions` - Attribution map
+    * `predict_fn` - Prediction function
+    * `opts` - Options
+
+  ## Returns
+    Map with infidelity score (lower is better)
+  """
+  @spec compute_infidelity(list(), map(), (any() -> any()), keyword()) ::
+          Validation.Infidelity.result()
+  defdelegate compute_infidelity(instance, attributions, predict_fn, opts \\ []),
+    to: Validation.Infidelity,
+    as: :compute
 end

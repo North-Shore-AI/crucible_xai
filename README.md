@@ -11,14 +11,14 @@
 [![Hex.pm](https://img.shields.io/hexpm/v/crucible_xai.svg)](https://hex.pm/packages/crucible_xai)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-purple.svg)](https://hexdocs.pm/crucible_xai)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/North-Shore-AI/crucible_xai/blob/main/LICENSE)
-[![Tests](https://img.shields.io/badge/tests-277_passing-brightgreen.svg)]()
-[![Coverage](https://img.shields.io/badge/coverage-87.1%25-green.svg)]()
+[![Tests](https://img.shields.io/badge/tests-337_passing-brightgreen.svg)]()
+[![Coverage](https://img.shields.io/badge/coverage-96%25-green.svg)]()
 
 ---
 
 A production-ready Explainable AI (XAI) library for Elixir, providing model interpretability through **LIME, SHAP, and Feature Attribution methods**. Built on Nx for high-performance numerical computing with comprehensive test coverage and strict quality standards.
 
-**Version**: 0.2.1 | **Tests**: 277 passing | **Coverage**: 94.1%
+**Version**: 0.3.0 | **Tests**: 337+ passing | **Coverage**: 96%+
 
 ## ✨ Features
 
@@ -50,9 +50,17 @@ A production-ready Explainable AI (XAI) library for Elixir, providing model inte
 - ✅ **Model-Agnostic**: Works with any prediction function (black-box or white-box)
 - ✅ **High Performance**: Nx tensor operations throughout
 - ✅ **HTML Visualizations**: Interactive Chart.js visualizations for LIME and SHAP
-- ✅ **Well-Tested**: 277 tests (232 unit + 34 property + 11 doctests), >94% coverage
+- ✅ **Well-Tested**: 337+ tests (unit, property-based, doctests), >96% coverage
 - ✅ **Zero Warnings**: Strict compilation with comprehensive type specifications
 - ✅ **Shapley Properties**: SHAP additivity, symmetry, and dummy properties validated
+
+#### Validation & Quality Metrics (new in v0.3.0)
+- ✅ **Faithfulness**: Feature removal correlation + monotonicity checks
+- ✅ **Infidelity**: Perturbation-based error between predicted and actual changes
+- ✅ **Sensitivity**: Input and hyperparameter stability scoring
+- ✅ **Axioms**: Completeness, symmetry, dummy, linearity validation
+- ✅ **Quality Gates**: `quick_validate/4` fast pass/fail for production
+- ✅ **Benchmarking**: Compare methods by quality score and runtime
 
 ### Roadmap
 
@@ -68,7 +76,7 @@ Add `crucible_xai` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:crucible_xai, "~> 0.2.1"}
+    {:crucible_xai, "~> 0.3.0"}
   ]
 end
 ```
@@ -194,6 +202,81 @@ shap_sum = Enum.sum(Map.values(shap_values))
 # Verify with built-in validator
 is_valid = CrucibleXAI.SHAP.verify_additivity(shap_values, instance, background, predict_fn)
 # => true
+```
+
+### Validate Explanations (new in v0.3.0)
+
+Run end-to-end quality checks on any explanation:
+
+```elixir
+explanation = CrucibleXai.explain(instance, predict_fn, num_samples: 2000)
+
+validation = CrucibleXai.validate_explanation(
+  explanation,
+  instance,
+  predict_fn,
+  include_sensitivity: true,         # slower, enables stability scoring
+  baseline: background_data,         # used for axiom checks (SHAP/IG)
+  num_perturbations: 100             # used for infidelity
+)
+
+IO.puts(validation.summary)
+validation.quality_score            # 0.0 - 1.0 (weighted faithfulness/infidelity/axioms)
+validation.faithfulness.faithfulness_score
+validation.infidelity.infidelity_score
+validation.sensitivity.stability_score
+validation.axioms.all_satisfied
+```
+
+Fast production gate:
+
+```elixir
+quick = CrucibleXai.quick_validate(explanation, instance, predict_fn)
+
+quick.passes_quality_gate           # true/false (faithfulness >= 0.7 and infidelity <= 0.1)
+quick.interpretation                # "Excellent" | "Good" | "Acceptable" | "Poor"
+```
+
+Direct metric access:
+
+```elixir
+# Faithfulness: correlation between attribution rank and prediction drop
+faithfulness = CrucibleXai.measure_faithfulness(instance, explanation, predict_fn,
+  baseline_value: 0.0,
+  correlation_method: :spearman
+)
+
+# Infidelity: mean squared error between predicted and actual changes
+infidelity = CrucibleXai.compute_infidelity(instance, explanation.feature_weights, predict_fn,
+  num_perturbations: 200,
+  perturbation_std: 0.1,
+  normalize: true
+)
+
+# Axioms only (completeness, symmetry, dummy, linearity)
+axioms = CrucibleXAI.Validation.Axioms.validate_all_axioms(
+  explanation.feature_weights,
+  instance,
+  predict_fn,
+  method: explanation.method,
+  baseline: background_data
+)
+```
+
+Compare methods by quality and speed:
+
+```elixir
+result = CrucibleXAI.Validation.benchmark_methods(
+  instance,
+  predict_fn,
+  [
+    {:lime, num_samples: 2000},
+    {:shap, background_data, [num_samples: 1000]}
+  ]
+)
+
+IO.puts(result.comparison_summary)
+# Method  | Faithfulness | Infidelity | Quality | Time
 ```
 
 ### Gradient-based Attribution
