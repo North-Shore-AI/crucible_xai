@@ -1,7 +1,7 @@
 defmodule CrucibleXai.MixProject do
   use Mix.Project
 
-  @version "0.3.0"
+  @version "0.4.0"
   @source_url "https://github.com/North-Shore-AI/crucible_xai"
 
   def project do
@@ -41,6 +41,7 @@ defmodule CrucibleXai.MixProject do
   defp deps do
     [
       {:nx, "~> 0.7"},
+      {:crucible_ir, "~> 0.1.1"},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:jason, "~> 1.4"},
       {:stream_data, "~> 1.1", only: :test},

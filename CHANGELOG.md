@@ -14,6 +14,121 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Counterfactual explanations (DiCE)
 - Neural network-specific methods (LRP, DeepLIFT, GradCAM)
 
+## [0.4.0] - 2025-11-26
+
+### Added - Pipeline Stage Integration
+
+Integration with the Crucible IR pipeline framework, enabling CrucibleXAI to be used as a pipeline stage in larger ML reliability experiments.
+
+#### New Modules
+
+**CrucibleXAI.Stage**
+- Pipeline stage implementation for Crucible framework integration
+- `run/2` function accepting context with model function and instances
+- `describe/1` function for stage introspection and metadata
+- Support for LIME, SHAP (all variants), and feature importance methods
+- Configurable via `experiment.reliability.xai` in context or direct options
+- Parallel batch processing support
+- Comprehensive error handling with graceful degradation
+
+#### Stage Capabilities
+
+**Input Requirements:**
+- `model_fn` - Prediction function
+- `instances` or `instance` - Data to explain
+- `background_data` - Required for SHAP methods (optional for LIME)
+- `experiment.reliability.xai` - Optional configuration via CrucibleIR
+
+**Output:**
+- Adds `:xai` key to context with explanation results
+- Includes metadata (timestamp, instance count)
+- Preserves all methods run and their results
+
+**Supported Methods:**
+- `:lime` - LIME explanations
+- `:shap`, `:kernel_shap` - KernelSHAP approximation
+- `:linear_shap` - Exact SHAP for linear models
+- `:sampling_shap` - Monte Carlo SHAP approximation
+- `:feature_importance` - Permutation importance
+
+**Configuration Options:**
+- `methods` - List of XAI methods to run
+- `lime_opts` - LIME-specific options (num_samples, kernel, etc.)
+- `shap_opts` - SHAP-specific options (num_samples, method, etc.)
+- `feature_importance_opts` - Permutation importance options
+- `parallel` - Enable parallel batch processing
+
+#### Dependencies
+
+- Added `{:crucible_ir, "~> 0.1.1"}` dependency
+- Enables integration with Crucible experiment framework
+- Provides standardized configuration via CrucibleIR.Reliability.* structs
+
+#### Testing
+
+- 25 new comprehensive tests for Stage module
+- Tests for all supported XAI methods
+- Error handling and edge case coverage
+- Configuration extraction and option passing
+- Metadata validation
+- Total test count: 362+ tests (337 existing + 25 new)
+
+#### Documentation
+
+- Complete API documentation for Stage module
+- Usage examples with context structure
+- Integration guide for Crucible pipelines
+- Method selection and configuration examples
+
+#### Use Cases Enabled
+
+**Pipeline Integration:**
+- Use CrucibleXAI as a stage in multi-step ML experiments
+- Combine with crucible_bench for statistical analysis
+- Integrate with crucible_telemetry for metrics tracking
+- Chain with other Crucible reliability mechanisms
+
+**Experiment Workflows:**
+- Standardized XAI analysis across experiments
+- Reproducible explanation generation
+- Automated explanation quality assessment
+- Multi-method comparison in pipelines
+
+**Example Usage:**
+
+```elixir
+# In a Crucible pipeline
+context = %{
+  model_fn: &MyModel.predict/1,
+  instances: test_data,
+  background_data: training_sample,
+  experiment: %{
+    reliability: %{
+      xai: %{
+        methods: [:lime, :shap],
+        lime_opts: %{num_samples: 1000},
+        parallel: true
+      }
+    }
+  }
+}
+
+{:ok, updated_context} = CrucibleXAI.Stage.run(context)
+# updated_context.xai contains LIME and SHAP explanations
+```
+
+### Breaking Changes
+
+None - fully backward compatible with v0.3.0. The Stage module is a new addition that doesn't affect existing LIME/SHAP/FeatureAttribution APIs.
+
+### Quality Metrics
+
+- 25+ new tests added
+- Total test count: 362+ tests
+- Zero compilation warnings
+- Full type specifications (@spec) for all Stage functions
+- 100% documentation coverage for Stage module
+
 ## [0.3.0] - 2025-11-25
 
 ### Added - Validation & Quality Metrics Suite

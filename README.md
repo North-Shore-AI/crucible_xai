@@ -11,14 +11,14 @@
 [![Hex.pm](https://img.shields.io/hexpm/v/crucible_xai.svg)](https://hex.pm/packages/crucible_xai)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-purple.svg)](https://hexdocs.pm/crucible_xai)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/North-Shore-AI/crucible_xai/blob/main/LICENSE)
-[![Tests](https://img.shields.io/badge/tests-337_passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-362_passing-brightgreen.svg)]()
 [![Coverage](https://img.shields.io/badge/coverage-96%25-green.svg)]()
 
 ---
 
 A production-ready Explainable AI (XAI) library for Elixir, providing model interpretability through **LIME, SHAP, and Feature Attribution methods**. Built on Nx for high-performance numerical computing with comprehensive test coverage and strict quality standards.
 
-**Version**: 0.3.0 | **Tests**: 337+ passing | **Coverage**: 96%+
+**Version**: 0.4.0 | **Tests**: 362+ passing | **Coverage**: 96%+
 
 ## ✨ Features
 
@@ -76,7 +76,7 @@ Add `crucible_xai` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:crucible_xai, "~> 0.3.0"}
+    {:crucible_xai, "~> 0.4.0"}
   ]
 end
 ```
@@ -110,6 +110,46 @@ top_features = CrucibleXAI.Explanation.top_features(explanation, 5)
 # View as text
 IO.puts(CrucibleXAI.Explanation.to_text(explanation))
 ```
+
+### Pipeline Stage Integration (new in v0.4.0)
+
+Use CrucibleXAI as a stage in Crucible framework pipelines:
+
+```elixir
+# In a Crucible pipeline
+context = %{
+  model_fn: &MyModel.predict/1,
+  instances: [[1.0, 2.0], [3.0, 4.0]],
+  background_data: [[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]],
+  experiment: %{
+    reliability: %{
+      xai: %{
+        methods: [:lime, :shap, :feature_importance],
+        lime_opts: %{num_samples: 1000},
+        shap_opts: %{num_samples: 500},
+        parallel: true
+      }
+    }
+  }
+}
+
+{:ok, updated_context} = CrucibleXAI.Stage.run(context)
+
+# Access results
+lime_explanations = updated_context.xai.explanations.lime
+shap_values = updated_context.xai.explanations.shap
+feature_importance = updated_context.xai.explanations.feature_importance
+
+# Introspect the stage
+stage_info = CrucibleXAI.Stage.describe(%{verbose: true})
+IO.inspect(stage_info.available_methods)
+```
+
+The Stage module integrates seamlessly with:
+- **crucible_bench** - Statistical testing
+- **crucible_telemetry** - Metrics tracking
+- **crucible_harness** - Experiment orchestration
+- **crucible_trace** - Causal transparency
 
 ### Customized LIME
 
@@ -662,6 +702,7 @@ Explanation.to_map(explanation) |> Jason.encode!()
 ```
 lib/crucible_xai/
 ├── crucible_xai.ex                      # Public API (explain, explain_batch, explain_shap, feature_importance)
+├── stage.ex                              # Pipeline stage for Crucible framework integration (new in v0.4.0)
 ├── explanation.ex                        # Explanation struct & utilities
 │
 ├── lime.ex                              # LIME with parallel batch processing
