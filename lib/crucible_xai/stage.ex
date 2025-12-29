@@ -42,7 +42,7 @@ defmodule CrucibleXAI.Stage do
       # updated_context.xai contains explanation results
   """
 
-  alias CrucibleXAI.{LIME, SHAP, FeatureAttribution}
+  alias CrucibleXAI.{FeatureAttribution, LIME, SHAP}
 
   # Note: We define the callback functions but don't use @behaviour since
   # crucible_framework may not be a dependency. The framework will call these
@@ -91,7 +91,8 @@ defmodule CrucibleXAI.Stage do
 
   - `:verbose` - Include detailed information (default: false)
   """
-  @spec describe(map()) :: map()
+  @dialyzer {:nowarn_function, describe: 1}
+  @spec describe(map()) :: %{atom() => any()}
   def describe(opts \\ %{}) do
     verbose = Map.get(opts, :verbose, false)
 
@@ -183,16 +184,18 @@ defmodule CrucibleXAI.Stage do
     xai_config = get_in(context, [:experiment, :reliability, :xai]) || %{}
 
     config = %{
-      methods: Map.get(opts, :methods) || Map.get(xai_config, :methods) || [:lime],
-      lime_opts: Map.get(opts, :lime_opts) || Map.get(xai_config, :lime_opts) || %{},
-      shap_opts: Map.get(opts, :shap_opts) || Map.get(xai_config, :shap_opts) || %{},
-      feature_importance_opts:
-        Map.get(opts, :feature_importance_opts) ||
-          Map.get(xai_config, :feature_importance_opts) || %{},
-      parallel: Map.get(opts, :parallel) || Map.get(xai_config, :parallel) || false
+      methods: get_config_value(opts, xai_config, :methods, [:lime]),
+      lime_opts: get_config_value(opts, xai_config, :lime_opts, %{}),
+      shap_opts: get_config_value(opts, xai_config, :shap_opts, %{}),
+      feature_importance_opts: get_config_value(opts, xai_config, :feature_importance_opts, %{}),
+      parallel: get_config_value(opts, xai_config, :parallel, false)
     }
 
     {:ok, config}
+  end
+
+  defp get_config_value(opts, xai_config, key, default) do
+    Map.get(opts, key) || Map.get(xai_config, key) || default
   end
 
   defp run_xai_methods(instances, model_fn, context, config) do
@@ -241,29 +244,7 @@ defmodule CrucibleXAI.Stage do
         {:error, "SHAP methods require background_data in context"}
 
       background_data ->
-        shap_opts = Map.to_list(config.shap_opts)
-
-        # Add method-specific option
-        shap_opts =
-          case method do
-            :linear_shap -> shap_opts ++ [method: :linear_shap]
-            :sampling_shap -> shap_opts ++ [method: :sampling_shap]
-            _ -> shap_opts
-          end
-
-        # linear_shap requires coefficients - check if provided
-        if method == :linear_shap and not Keyword.has_key?(shap_opts, :coefficients) do
-          {:error,
-           "linear_shap requires :coefficients in shap_opts (for known linear models only)"}
-        else
-          # Run SHAP for each instance
-          shap_values =
-            Enum.map(instances, fn instance ->
-              SHAP.explain(instance, background_data, model_fn, shap_opts)
-            end)
-
-          {:ok, %{method: method, shap_values: shap_values, count: length(shap_values)}}
-        end
+        execute_shap_method(method, instances, background_data, model_fn, config)
     end
   end
 
@@ -280,11 +261,33 @@ defmodule CrucibleXAI.Stage do
     fi_opts = Map.to_list(config.feature_importance_opts)
 
     importance = FeatureAttribution.permutation_importance(model_fn, validation_data, fi_opts)
-
     {:ok, %{method: :feature_importance, importance: importance}}
   end
 
   defp execute_method(method, _instances, _model_fn, _context, _config) do
     {:error, "Unknown XAI method: #{method}"}
+  end
+
+  defp execute_shap_method(method, instances, background_data, model_fn, config) do
+    shap_opts = Map.to_list(config.shap_opts)
+    # Add method-specific option
+    shap_opts =
+      case method do
+        :linear_shap -> shap_opts ++ [method: :linear_shap]
+        :sampling_shap -> shap_opts ++ [method: :sampling_shap]
+        _ -> shap_opts
+      end
+
+    if method == :linear_shap and not Keyword.has_key?(shap_opts, :coefficients) do
+      {:error, "linear_shap requires :coefficients in shap_opts (for known linear models only)"}
+    else
+      # Run SHAP for each instance
+      shap_values =
+        Enum.map(instances, fn instance ->
+          SHAP.explain(instance, background_data, model_fn, shap_opts)
+        end)
+
+      {:ok, %{method: method, shap_values: shap_values, count: length(shap_values)}}
+    end
   end
 end

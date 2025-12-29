@@ -130,16 +130,18 @@ defmodule CrucibleXAI.Global.ICE do
         }
   def centered_ice(ice_result) do
     centered_curves =
-      Enum.map(ice_result.curves, fn curve ->
-        if length(curve) > 0 do
-          first = hd(curve)
-          Enum.map(curve, fn pred -> pred - first end)
-        else
-          curve
-        end
-      end)
+      Enum.map(ice_result.curves, &center_curve/1)
 
     Map.put(ice_result, :curves, centered_curves)
+  end
+
+  defp center_curve(curve) do
+    if length(curve) > 0 do
+      first = hd(curve)
+      Enum.map(curve, fn pred -> pred - first end)
+    else
+      curve
+    end
   end
 
   @doc """
@@ -164,7 +166,7 @@ defmodule CrucibleXAI.Global.ICE do
   def average_ice_curves(ice_result) do
     curves = ice_result.curves
 
-    if length(curves) == 0 do
+    if curves == [] do
       []
     else
       # Number of points in each curve

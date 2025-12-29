@@ -26,6 +26,6 @@ crucible_xai-*/
 /tmp/
 
 # Dialyzer PLT cache
-priv/plts/
+/priv/plts/
 
 repomix*.xml

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/crucible_xai.svg" alt="CrucibleXAI" width="150"/>
+  <img src="assets/crucible_xai.svg" alt="CrucibleXAI" width="200"/>
 </p>
 
 # CrucibleXAI

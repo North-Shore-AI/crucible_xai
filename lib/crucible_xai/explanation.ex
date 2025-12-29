@@ -258,25 +258,22 @@ defmodule CrucibleXAI.Explanation do
     weights
     |> Enum.sort_by(fn {_, w} -> abs(w) end, :desc)
     |> Enum.take(num_features)
-    |> Enum.map(fn {idx, weight} ->
+    |> Enum.map_join("\n", fn {idx, weight} ->
       name = Map.get(feature_names, idx, "Feature #{idx}")
       sign = if weight > 0, do: "+", else: ""
       bar = progress_bar(abs(weight), 0.0, max_weight(weights))
       "  #{name}: #{sign}#{Float.round(weight, 4)} #{bar}"
     end)
-    |> Enum.join("\n")
   end
 
   defp format_features(features, feature_names) do
     if Enum.empty?(features) do
       "  (none)"
     else
-      features
-      |> Enum.map(fn {idx, weight} ->
+      Enum.map_join(features, "\n", fn {idx, weight} ->
         name = Map.get(feature_names, idx, "Feature #{idx}")
         "  #{name}: #{Float.round(weight, 4)}"
       end)
-      |> Enum.join("\n")
     end
   end
 

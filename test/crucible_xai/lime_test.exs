@@ -2,8 +2,8 @@ defmodule CrucibleXAI.LIMETest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
-  alias CrucibleXAI.LIME
   alias CrucibleXAI.Explanation
+  alias CrucibleXAI.LIME
 
   describe "explain/3" do
     test "explains simple linear model" do
@@ -222,11 +222,11 @@ defmodule CrucibleXAI.LIMETest do
 
       # All weights should be finite
       assert Enum.all?(explanation.feature_weights, fn {_idx, weight} ->
-               is_float(weight) and not is_nan(weight) and not is_infinity(weight)
+               is_float(weight) and not nan?(weight) and not infinity?(weight)
              end)
     end
   end
 
-  defp is_nan(x), do: x != x
-  defp is_infinity(x), do: abs(x) > 1.0e308
+  defp nan?(x) when is_float(x), do: :erlang.float_to_binary(x) == "nan"
+  defp infinity?(x), do: abs(x) > 1.0e308
 end

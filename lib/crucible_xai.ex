@@ -47,7 +47,7 @@ defmodule CrucibleXai do
     "Why Should I Trust You?": Explaining the Predictions of Any Classifier. KDD.
   """
 
-  alias CrucibleXAI.{LIME, SHAP, FeatureAttribution, Explanation, Validation}
+  alias CrucibleXAI.{Explanation, FeatureAttribution, LIME, SHAP, Validation}
 
   @doc """
   Explain a model prediction using LIME.

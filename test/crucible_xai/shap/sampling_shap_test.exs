@@ -2,6 +2,7 @@ defmodule CrucibleXAI.SHAP.SamplingShapTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
 
+  alias CrucibleXAI.SHAP.KernelSHAP
   alias CrucibleXAI.SHAP.SamplingShap
 
   describe "explain/4" do
@@ -85,7 +86,7 @@ defmodule CrucibleXAI.SHAP.SamplingShapTest do
       # Time KernelSHAP
       {time_kernel, _result} =
         :timer.tc(fn ->
-          CrucibleXAI.SHAP.KernelSHAP.explain(instance, background, predict_fn, num_samples: 500)
+          KernelSHAP.explain(instance, background, predict_fn, num_samples: 500)
         end)
 
       # SamplingShap should be comparable or faster

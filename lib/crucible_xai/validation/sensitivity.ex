@@ -461,7 +461,7 @@ defmodule CrucibleXAI.Validation.Sensitivity do
     recommendations = []
 
     recommendations =
-      if length(robust_params) > 0 do
+      if robust_params != [] do
         [
           "Parameters #{inspect(robust_params)} are robust - default values are safe"
           | recommendations
@@ -471,13 +471,12 @@ defmodule CrucibleXAI.Validation.Sensitivity do
       end
 
     recommendations =
-      if length(sensitive_params) > 0 do
+      if sensitive_params != [] do
         sensitive_details =
-          Enum.map(sensitive_params, fn param ->
+          Enum.map_join(sensitive_params, ", ", fn param ->
             variation = param_sensitivity[param].variation
             "#{param} (CV: #{Float.round(variation, 3)})"
           end)
-          |> Enum.join(", ")
 
         [
           "Parameters #{sensitive_details} are sensitive - careful tuning required"
@@ -487,7 +486,7 @@ defmodule CrucibleXAI.Validation.Sensitivity do
         recommendations
       end
 
-    if length(recommendations) == 0 do
+    if recommendations == [] do
       ["All parameters appear stable"]
     else
       recommendations

@@ -146,26 +146,7 @@ defmodule CrucibleXAI.Validation.Axioms do
       |> Enum.sum()
 
     # Compute expected sum based on method
-    expected_sum =
-      case method do
-        :shap ->
-          compute_shap_expected_sum(instance, baseline, predict_fn)
-
-        :integrated_gradients ->
-          compute_ig_expected_sum(instance, baseline, predict_fn)
-
-        _ ->
-          # Generic: f(x) - f(baseline) if baseline provided
-          if baseline do
-            baseline_inst = if is_list(hd(baseline)), do: hd(baseline), else: baseline
-            pred_instance = get_prediction(predict_fn, instance)
-            pred_baseline = get_prediction(predict_fn, baseline_inst)
-            pred_instance - pred_baseline
-          else
-            # No baseline - can't verify
-            attribution_sum
-          end
-      end
+    expected_sum = calculate_expected_sum(method, instance, baseline, predict_fn, attribution_sum)
 
     # Compute error
     error = abs(attribution_sum - expected_sum)
@@ -249,7 +230,7 @@ defmodule CrucibleXAI.Validation.Axioms do
         0.0
       end
 
-    satisfies_symmetry = length(violations) == 0
+    satisfies_symmetry = violations == []
 
     %{
       satisfies_symmetry: satisfies_symmetry,
@@ -314,7 +295,7 @@ defmodule CrucibleXAI.Validation.Axioms do
     dummy_features =
       feature_indices
       |> Enum.filter(fn idx ->
-        is_dummy_feature?(instance, idx, predict_fn, num_variations, prediction_tolerance)
+        dummy_feature?(instance, idx, predict_fn, num_variations, prediction_tolerance)
       end)
 
     # Check if dummy features have near-zero attribution
@@ -324,7 +305,7 @@ defmodule CrucibleXAI.Validation.Axioms do
         abs(Map.get(attributions, idx, 0.0)) > tolerance
       end)
 
-    satisfies_dummy = length(violations) == 0
+    satisfies_dummy = violations == []
 
     interpretation =
       if satisfies_dummy do
@@ -535,6 +516,26 @@ defmodule CrucibleXAI.Validation.Axioms do
 
   # Private helper functions
 
+  defp calculate_expected_sum(:shap, instance, baseline, predict_fn, _sum) do
+    compute_shap_expected_sum(instance, baseline, predict_fn)
+  end
+
+  defp calculate_expected_sum(:integrated_gradients, instance, baseline, predict_fn, _sum) do
+    compute_ig_expected_sum(instance, baseline, predict_fn)
+  end
+
+  defp calculate_expected_sum(_method, instance, baseline, predict_fn, attribution_sum) do
+    if baseline do
+      baseline_inst = if is_list(hd(baseline)), do: hd(baseline), else: baseline
+      pred_instance = get_prediction(predict_fn, instance)
+      pred_baseline = get_prediction(predict_fn, baseline_inst)
+      pred_instance - pred_baseline
+    else
+      # No baseline available, assume compliant by returning attribution_sum
+      attribution_sum
+    end
+  end
+
   defp get_prediction(predict_fn, instance) do
     result = predict_fn.(instance)
 
@@ -575,7 +576,7 @@ defmodule CrucibleXAI.Validation.Axioms do
     pred_instance - pred_baseline
   end
 
-  defp is_dummy_feature?(instance, feature_idx, predict_fn, num_variations, tolerance) do
+  defp dummy_feature?(instance, feature_idx, predict_fn, num_variations, tolerance) do
     # Get original prediction
     original_pred = get_prediction(predict_fn, instance)
 
@@ -588,15 +589,8 @@ defmodule CrucibleXAI.Validation.Axioms do
         # Generate random value in reasonable range
         new_value = original_value + (:rand.uniform() - 0.5) * 10.0
 
-        # Create modified instance
-        modified =
-          instance
-          |> Enum.with_index()
-          |> Enum.map(fn {val, idx} ->
-            if idx == feature_idx, do: new_value, else: val
-          end)
-
-        # Get prediction
+        # Create modified instance and get prediction
+        modified = replace_feature_at(instance, feature_idx, new_value)
         get_prediction(predict_fn, modified)
       end)
 
@@ -607,6 +601,14 @@ defmodule CrucibleXAI.Validation.Axioms do
       |> Enum.max()
 
     max_change <= tolerance
+  end
+
+  defp replace_feature_at(instance, target_idx, new_value) do
+    instance
+    |> Enum.with_index()
+    |> Enum.map(fn {val, idx} ->
+      if idx == target_idx, do: new_value, else: val
+    end)
   end
 
   defp interpret_completeness(true, _relative_error) do
@@ -620,58 +622,52 @@ defmodule CrucibleXAI.Validation.Axioms do
   defp generate_axiom_summary(completeness, symmetry, dummy, linearity, all_satisfied) do
     status = if all_satisfied, do: "✓ All axioms satisfied", else: "✗ Some axioms violated"
 
-    completeness_str =
-      unless Map.has_key?(completeness, :skipped) do
-        if completeness.satisfies_completeness do
-          "  ✓ Completeness: satisfied (error: #{Float.round(completeness.error, 4)})"
-        else
-          "  ✗ Completeness: violated (error: #{Float.round(completeness.error, 4)})"
-        end
-      else
-        "  - Completeness: skipped"
-      end
-
-    symmetry_str =
-      unless Map.has_key?(symmetry, :skipped) do
-        if symmetry.satisfies_symmetry do
-          "  ✓ Symmetry: satisfied"
-        else
-          "  ✗ Symmetry: #{length(symmetry.violations)} violations"
-        end
-      else
-        "  - Symmetry: skipped"
-      end
-
-    dummy_str =
-      unless Map.has_key?(dummy, :skipped) do
-        if dummy.satisfies_dummy do
-          "  ✓ Dummy: satisfied (#{length(dummy.dummy_features)} dummy features)"
-        else
-          "  ✗ Dummy: #{length(dummy.violations)} violations"
-        end
-      else
-        "  - Dummy: skipped"
-      end
-
-    linearity_str =
-      unless Map.has_key?(linearity, :skipped) do
-        if linearity.satisfies_linearity do
-          "  ✓ Linearity: satisfied"
-        else
-          "  ✗ Linearity: violated (max error: #{Float.round(linearity.max_error, 4)})"
-        end
-      else
-        "  - Linearity: skipped"
-      end
-
     """
     === Axiom Validation Summary ===
     #{status}
 
-    #{completeness_str}
-    #{symmetry_str}
-    #{dummy_str}
-    #{linearity_str}
+    #{format_completeness_summary(completeness)}
+    #{format_symmetry_summary(symmetry)}
+    #{format_dummy_summary(dummy)}
+    #{format_linearity_summary(linearity)}
     """
+  end
+
+  defp format_completeness_summary(%{skipped: true}), do: "  - Completeness: skipped"
+
+  defp format_completeness_summary(result) do
+    if result.satisfies_completeness do
+      "  ✓ Completeness: satisfied (error: #{Float.round(result.error, 4)})"
+    else
+      "  ✗ Completeness: violated (error: #{Float.round(result.error, 4)})"
+    end
+  end
+
+  defp format_symmetry_summary(%{skipped: true}), do: "  - Symmetry: skipped"
+
+  defp format_symmetry_summary(result) do
+    if result.satisfies_symmetry do
+      "  ✓ Symmetry: satisfied"
+    else
+      "  ✗ Symmetry: #{length(result.violations)} violations"
+    end
+  end
+
+  defp format_dummy_summary(result) do
+    if result.satisfies_dummy do
+      "  ✓ Dummy: satisfied (#{length(result.dummy_features)} dummy features)"
+    else
+      "  ✗ Dummy: #{length(result.violations)} violations"
+    end
+  end
+
+  defp format_linearity_summary(%{skipped: true}), do: "  - Linearity: skipped"
+
+  defp format_linearity_summary(result) do
+    if result.satisfies_linearity do
+      "  ✓ Linearity: satisfied"
+    else
+      "  ✗ Linearity: violated (max error: #{Float.round(result.max_error, 4)})"
+    end
   end
 end

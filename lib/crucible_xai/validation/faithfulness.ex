@@ -130,25 +130,13 @@ defmodule CrucibleXAI.Validation.Faithfulness do
 
     # Remove features incrementally and measure prediction changes
     {prediction_drops, feature_order} =
-      Enum.reduce(sorted_features, {[], []}, fn {feature_idx, _weight}, {drops, order} ->
-        # Create instance with this feature and all previous ones removed
-        modified_instance =
-          instance
-          |> Enum.with_index()
-          |> Enum.map(fn {val, idx} ->
-            if idx in order or idx == feature_idx do
-              baseline_value
-            else
-              val
-            end
-          end)
-
-        # Get prediction on modified instance
-        modified_pred = get_prediction(predict_fn, modified_instance)
-        drop = abs(original_pred - modified_pred)
-
-        {drops ++ [drop], order ++ [feature_idx]}
-      end)
+      calculate_drops_and_order(
+        sorted_features,
+        instance,
+        predict_fn,
+        baseline_value,
+        original_pred
+      )
 
     # Compute correlation between rank and prediction drops
     ranks = Enum.with_index(sorted_features, 1) |> Enum.map(fn {_, idx} -> idx end)
@@ -355,5 +343,36 @@ defmodule CrucibleXAI.Validation.Faithfulness do
     Monotonicity: #{if monotonicity.is_monotonic, do: "Yes", else: "No (#{monotonicity.violations} violations)"}
     Assessment: #{faithfulness.interpretation}
     """
+  end
+
+  defp calculate_drops_and_order(
+         sorted_features,
+         instance,
+         predict_fn,
+         baseline_value,
+         original_pred
+       ) do
+    Enum.reduce(sorted_features, {[], []}, fn {feature_idx, _weight}, {drops, order} ->
+      # Create instance with this feature and all previous ones removed
+      modified_instance = create_modified_instance(instance, order, feature_idx, baseline_value)
+
+      # Get prediction on modified instance
+      modified_pred = get_prediction(predict_fn, modified_instance)
+      drop = abs(original_pred - modified_pred)
+
+      {drops ++ [drop], order ++ [feature_idx]}
+    end)
+  end
+
+  defp create_modified_instance(instance, order, feature_idx, baseline_value) do
+    instance
+    |> Enum.with_index()
+    |> Enum.map(fn {val, idx} ->
+      if idx in order or idx == feature_idx do
+        baseline_value
+      else
+        val
+      end
+    end)
   end
 end

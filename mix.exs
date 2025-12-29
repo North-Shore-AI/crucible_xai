@@ -41,7 +41,7 @@ defmodule CrucibleXai.MixProject do
   defp deps do
     [
       {:nx, "~> 0.7"},
-      {:crucible_ir, "~> 0.1.1"},
+      {:crucible_ir, "~> 0.2.1"},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:jason, "~> 1.4"},
       {:stream_data, "~> 1.1", only: :test},

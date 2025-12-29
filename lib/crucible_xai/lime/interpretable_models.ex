@@ -338,12 +338,10 @@ defmodule CrucibleXAI.LIME.InterpretableModels.Ridge do
   end
 
   defp solve_linear_system(a, b) do
-    try do
-      Nx.LinAlg.solve(a, b)
-    rescue
-      _ ->
-        Nx.dot(Nx.LinAlg.pinv(a), b)
-    end
+    Nx.LinAlg.solve(a, b)
+  rescue
+    _ ->
+      Nx.dot(Nx.LinAlg.pinv(a), b)
   end
 
   defp calculate_r_squared(y_true, y_pred, weights) do

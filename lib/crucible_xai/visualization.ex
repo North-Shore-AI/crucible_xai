@@ -247,7 +247,7 @@ defmodule CrucibleXAI.Visualization do
       Explanation.top_features(explanation, num_features)
 
     rows =
-      Enum.map(top_features, fn {idx, weight} ->
+      Enum.map_join(top_features, fn {idx, weight} ->
         name = Map.get(feature_names, idx, "Feature #{idx}")
         class = if weight > 0, do: "positive", else: "negative"
         sign = if weight > 0, do: "+", else: ""
@@ -259,7 +259,6 @@ defmodule CrucibleXAI.Visualization do
         </tr>
         """
       end)
-      |> Enum.join()
 
     """
     <h2>Top Features</h2>
@@ -283,7 +282,7 @@ defmodule CrucibleXAI.Visualization do
       |> Enum.sort_by(fn {_idx, val} -> abs(val) end, :desc)
 
     rows =
-      Enum.map(sorted_features, fn {idx, value} ->
+      Enum.map_join(sorted_features, fn {idx, value} ->
         name = Map.get(feature_names, idx, "Feature #{idx}")
         class = if value > 0, do: "positive", else: "negative"
         sign = if value > 0, do: "+", else: ""
@@ -295,7 +294,6 @@ defmodule CrucibleXAI.Visualization do
         </tr>
         """
       end)
-      |> Enum.join()
 
     """
     <h2>SHAP Values</h2>

@@ -1,7 +1,7 @@
 defmodule CrucibleXAI.VisualizationTest do
   use ExUnit.Case, async: true
 
-  alias CrucibleXAI.{Visualization, Explanation}
+  alias CrucibleXAI.{Explanation, Visualization}
 
   describe "to_html/2" do
     test "generates HTML for LIME explanation" do
@@ -35,7 +35,7 @@ defmodule CrucibleXAI.VisualizationTest do
 
     test "handles feature names" do
       explanation = %Explanation{
-        instance: [25.0, 50000.0],
+        instance: [25.0, 50_000.0],
         feature_weights: %{0 => 0.5, 1 => 0.3},
         method: :lime
       }

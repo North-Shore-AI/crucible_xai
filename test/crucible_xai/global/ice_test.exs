@@ -3,6 +3,7 @@ defmodule CrucibleXAI.Global.ICETest do
   use ExUnitProperties
 
   alias CrucibleXAI.Global.ICE
+  alias CrucibleXAI.Global.PDP
 
   describe "ice_curves/4" do
     test "computes ICE curves for each instance" do
@@ -231,7 +232,7 @@ defmodule CrucibleXAI.Global.ICETest do
 
         # Compute PDP
         pdp_result =
-          CrucibleXAI.Global.PDP.partial_dependence(predict_fn, data, 0, num_grid_points: 5)
+          PDP.partial_dependence(predict_fn, data, 0, num_grid_points: 5)
 
         # Average of ICE curves should equal PDP
         avg_ice = ICE.average_ice_curves(ice_result)

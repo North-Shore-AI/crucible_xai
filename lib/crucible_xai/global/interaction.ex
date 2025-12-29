@@ -215,9 +215,10 @@ defmodule CrucibleXAI.Global.Interaction do
     first_instance = hd(data)
 
     n_features =
-      cond do
-        is_list(first_instance) -> length(first_instance)
-        true -> raise "Invalid data structure: expected list of lists"
+      if is_list(first_instance) do
+        length(first_instance)
+      else
+        raise "Invalid data structure: expected list of lists"
       end
 
     # Generate all feature pairs (only valid pairs where i < j)
@@ -247,17 +248,18 @@ defmodule CrucibleXAI.Global.Interaction do
   # Private helpers
 
   defp compute_variance(values) do
-    if length(values) == 0 do
+    if values == [] do
       0.0
     else
-      mean = Enum.sum(values) / length(values)
+      n = length(values)
+      mean = Enum.sum(values) / n
 
       sum_squared_diff =
         values
         |> Enum.map(fn v -> (v - mean) * (v - mean) end)
         |> Enum.sum()
 
-      sum_squared_diff / length(values)
+      sum_squared_diff / n
     end
   end
 end

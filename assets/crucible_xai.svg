@@ -1,42 +1,217 @@
-<svg width="200" height="240" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="grad_crucible_ensemble" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#8B4789;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#8B4789;stop-opacity:0.7" />
+    <!-- Primary gradient - deep purple to violet -->
+    <linearGradient id="hexGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6B21A8"/>
+      <stop offset="50%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#A855F7"/>
     </linearGradient>
+    
+    <!-- Inner glow gradient -->
+    <radialGradient id="innerGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#C4B5FD" stop-opacity="0.6"/>
+      <stop offset="70%" stop-color="#7C3AED" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#6B21A8" stop-opacity="0"/>
+    </radialGradient>
+    
+    <!-- Neural node gradient -->
+    <radialGradient id="nodeGrad" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#F3E8FF"/>
+      <stop offset="100%" stop-color="#C4B5FD"/>
+    </radialGradient>
+    
+    <!-- Central eye/insight gradient -->
+    <radialGradient id="eyeGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="40%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </radialGradient>
+    
+    <!-- Glass/transparency effect -->
+    <linearGradient id="glassGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.3"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.15"/>
+    </linearGradient>
+    
+    <!-- Soft shadow filter -->
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#1E1B4B" flood-opacity="0.4"/>
+    </filter>
+    
+    <!-- Inner shadow for depth -->
+    <filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/>
+      <feOffset dx="0" dy="2"/>
+      <feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.1  0 0 0 0 0  0 0 0 0 0.3  0 0 0 0.6 0"/>
+      <feBlend in2="SourceGraphic"/>
+    </filter>
+    
+    <!-- Glow filter for nodes -->
+    <filter id="nodeGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Lens flare filter -->
+    <filter id="lensFlare" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    
+    <!-- Hexagon clip path -->
+    <clipPath id="hexClip">
+      <path d="M100,8 L184,52 L184,148 L100,192 L16,148 L16,52 Z"/>
+    </clipPath>
+    
+    <!-- Pattern for circuit-like background -->
+    <pattern id="circuitPattern" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="10" cy="10" r="1" fill="#A855F7" opacity="0.3"/>
+      <path d="M0,10 L10,10 M10,0 L10,10" stroke="#A855F7" stroke-width="0.5" opacity="0.2"/>
+    </pattern>
   </defs>
 
-  <!-- Hexagon shape (Elixir style) -->
-  <path d="M 100,5 L 190,62.5 L 190,177.5 L 100,235 L 10,177.5 L 10,62.5 Z"
-        fill="url(#grad_crucible_ensemble)"
-        stroke="#FFFFFF"
-        stroke-width="3"/>
-
-  <!-- Inner hexagon for depth -->
-  <path d="M 100,25 L 170,67.5 L 170,172.5 L 100,215 L 30,172.5 L 30,67.5 Z"
+  <!-- Background hexagon with shadow -->
+  <path d="M100,8 L184,52 L184,148 L100,192 L16,148 L16,52 Z"
+        fill="url(#hexGrad)"
+        filter="url(#softShadow)"/>
+  
+  <!-- Circuit pattern overlay -->
+  <path d="M100,8 L184,52 L184,148 L100,192 L16,148 L16,52 Z"
+        fill="url(#circuitPattern)"
+        clip-path="url(#hexClip)"/>
+  
+  <!-- Inner glow layer -->
+  <path d="M100,8 L184,52 L184,148 L100,192 L16,148 L16,52 Z"
+        fill="url(#innerGlow)"/>
+  
+  <!-- Secondary hexagon outline -->
+  <path d="M100,20 L172,58 L172,142 L100,180 L28,142 L28,58 Z"
         fill="none"
-        stroke="#FFFFFF"
+        stroke="#C4B5FD"
         stroke-width="1"
+        opacity="0.4"/>
+  
+  <!-- Tertiary hexagon outline -->
+  <path d="M100,32 L160,64 L160,136 L100,168 L40,136 L40,64 Z"
+        fill="none"
+        stroke="#E9D5FF"
+        stroke-width="0.5"
         opacity="0.3"/>
 
-  <!-- Letter/Icon in center -->
-  <text x="100" y="135"
-        font-family="Arial, sans-serif"
-        font-size="80"
-        font-weight="bold"
-        fill="#FFFFFF"
-        text-anchor="middle">
-    C
-  </text>
+  <!-- Neural network layer - outer ring of nodes -->
+  <g filter="url(#nodeGlow)" opacity="0.9">
+    <!-- Top nodes -->
+    <circle cx="100" cy="45" r="6" fill="url(#nodeGrad)"/>
+    <circle cx="70" cy="55" r="4" fill="url(#nodeGrad)" opacity="0.7"/>
+    <circle cx="130" cy="55" r="4" fill="url(#nodeGrad)" opacity="0.7"/>
+    
+    <!-- Side nodes -->
+    <circle cx="55" cy="80" r="5" fill="url(#nodeGrad)"/>
+    <circle cx="145" cy="80" r="5" fill="url(#nodeGrad)"/>
+    <circle cx="50" cy="110" r="4" fill="url(#nodeGrad)" opacity="0.8"/>
+    <circle cx="150" cy="110" r="4" fill="url(#nodeGrad)" opacity="0.8"/>
+    <circle cx="55" cy="135" r="5" fill="url(#nodeGrad)"/>
+    <circle cx="145" cy="135" r="5" fill="url(#nodeGrad)"/>
+    
+    <!-- Bottom nodes -->
+    <circle cx="70" cy="155" r="4" fill="url(#nodeGrad)" opacity="0.7"/>
+    <circle cx="130" cy="155" r="4" fill="url(#nodeGrad)" opacity="0.7"/>
+    <circle cx="100" cy="160" r="6" fill="url(#nodeGrad)"/>
+  </g>
 
-  <!-- Small text at bottom -->
-  <text x="100" y="210"
-        font-family="Arial, sans-serif"
-        font-size="14"
-        font-weight="normal"
-        fill="#FFFFFF"
-        text-anchor="middle"
-        opacity="0.9">
-    Crucible
-  </text>
+  <!-- Neural connections - arcs representing information flow -->
+  <g stroke="#C4B5FD" stroke-width="1" fill="none" opacity="0.5">
+    <!-- Top to center connections -->
+    <path d="M100,45 Q90,70 85,85"/>
+    <path d="M100,45 Q110,70 115,85"/>
+    <path d="M70,55 Q75,75 85,85"/>
+    <path d="M130,55 Q125,75 115,85"/>
+    
+    <!-- Side to center connections -->
+    <path d="M55,80 Q70,85 85,90"/>
+    <path d="M145,80 Q130,85 115,90"/>
+    <path d="M50,110 Q70,105 85,100"/>
+    <path d="M150,110 Q130,105 115,100"/>
+    <path d="M55,135 Q75,125 85,115"/>
+    <path d="M145,135 Q125,125 115,115"/>
+    
+    <!-- Bottom to center connections -->
+    <path d="M70,155 Q80,140 85,115"/>
+    <path d="M130,155 Q120,140 115,115"/>
+    <path d="M100,160 Q100,135 100,115"/>
+  </g>
+
+  <!-- Animated pulse rings (static representation) -->
+  <circle cx="100" cy="100" r="35" fill="none" stroke="#E9D5FF" stroke-width="1" opacity="0.3"/>
+  <circle cx="100" cy="100" r="45" fill="none" stroke="#E9D5FF" stroke-width="0.5" opacity="0.2"/>
+  <circle cx="100" cy="100" r="55" fill="none" stroke="#E9D5FF" stroke-width="0.3" opacity="0.1"/>
+
+  <!-- Central insight eye - representing transparency/explainability -->
+  <g filter="url(#lensFlare)">
+    <!-- Outer eye ring -->
+    <ellipse cx="100" cy="100" rx="28" ry="28" fill="none" stroke="#F3E8FF" stroke-width="2" opacity="0.8"/>
+    
+    <!-- Inner eye glow -->
+    <circle cx="100" cy="100" r="22" fill="url(#eyeGrad)"/>
+    
+    <!-- Pupil/core - representing the "insight" -->
+    <circle cx="100" cy="100" r="12" fill="#92400E"/>
+    <circle cx="100" cy="100" r="8" fill="#1E1B4B"/>
+    
+    <!-- Highlight reflection -->
+    <ellipse cx="94" cy="94" rx="4" ry="3" fill="#FFFFFF" opacity="0.6"/>
+    <circle cx="106" cy="106" r="2" fill="#FFFFFF" opacity="0.3"/>
+  </g>
+
+  <!-- Transparency layers - representing "explainability" -->
+  <g opacity="0.6">
+    <!-- Layered rectangles showing model layers -->
+    <rect x="65" y="70" width="12" height="20" rx="2" fill="none" stroke="#F3E8FF" stroke-width="1" transform="rotate(-15 71 80)"/>
+    <rect x="123" y="70" width="12" height="20" rx="2" fill="none" stroke="#F3E8FF" stroke-width="1" transform="rotate(15 129 80)"/>
+    <rect x="65" y="110" width="12" height="20" rx="2" fill="none" stroke="#F3E8FF" stroke-width="1" transform="rotate(-15 71 120)"/>
+    <rect x="123" y="110" width="12" height="20" rx="2" fill="none" stroke="#F3E8FF" stroke-width="1" transform="rotate(15 129 120)"/>
+  </g>
+
+  <!-- Data flow arrows/chevrons -->
+  <g stroke="#E9D5FF" stroke-width="1.5" fill="none" opacity="0.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M75,50 L80,56 L75,62"/>
+    <path d="M125,50 L120,56 L125,62"/>
+    <path d="M75,138 L80,144 L75,150"/>
+    <path d="M125,138 L120,144 L125,150"/>
+  </g>
+
+  <!-- Magnifying glass accent - representing inspection/explanation -->
+  <g transform="translate(135, 60) rotate(30)" opacity="0.7">
+    <circle cx="0" cy="0" r="8" fill="none" stroke="#F3E8FF" stroke-width="1.5"/>
+    <line x1="6" y1="6" x2="12" y2="12" stroke="#F3E8FF" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Glass overlay for premium finish -->
+  <path d="M100,8 L184,52 L184,100 L100,100 L16,100 L16,52 Z"
+        fill="url(#glassGrad)"
+        opacity="0.5"/>
+
+  <!-- Subtle highlight on top edge -->
+  <path d="M100,8 L184,52"
+        stroke="#FFFFFF"
+        stroke-width="1"
+        opacity="0.3"
+        stroke-linecap="round"/>
+  <path d="M100,8 L16,52"
+        stroke="#FFFFFF"
+        stroke-width="1"
+        opacity="0.3"
+        stroke-linecap="round"/>
+
+  <!-- Final border -->
+  <path d="M100,8 L184,52 L184,148 L100,192 L16,148 L16,52 Z"
+        fill="none"
+        stroke="#A855F7"
+        stroke-width="2"
+        opacity="0.6"/>
 </svg>

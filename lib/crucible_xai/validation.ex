@@ -124,8 +124,8 @@ defmodule CrucibleXAI.Validation do
   - Sundararajan et al. (2017) "Axiomatic Attribution for Deep Networks"
   """
 
-  alias CrucibleXAI.Validation.{Faithfulness, Infidelity, Sensitivity, Axioms}
   alias CrucibleXAI.Explanation
+  alias CrucibleXAI.Validation.{Axioms, Faithfulness, Infidelity, Sensitivity}
 
   @type sensitivity_result ::
           Sensitivity.input_result() | %{skipped: true, reason: String.t()}
@@ -472,8 +472,7 @@ defmodule CrucibleXAI.Validation do
     separator = "--------|--------------|------------|---------|------"
 
     rows =
-      results
-      |> Enum.map(fn {method, result} ->
+      Enum.map_join(results, "\n", fn {method, result} ->
         faith = Float.round(result.validation.faithfulness_score, 2)
         infid = Float.round(result.validation.infidelity_score, 2)
         quality = Float.round(result.quality_score, 2)
@@ -481,7 +480,6 @@ defmodule CrucibleXAI.Validation do
 
         "#{String.pad_trailing(to_string(method), 8)}| #{String.pad_trailing(to_string(faith), 13)}| #{String.pad_trailing(to_string(infid), 11)}| #{String.pad_trailing(to_string(quality), 8)}| #{time}ms"
       end)
-      |> Enum.join("\n")
 
     """
     #{header}

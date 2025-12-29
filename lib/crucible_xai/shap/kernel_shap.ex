@@ -213,15 +213,16 @@ defmodule CrucibleXAI.SHAP.KernelSHAP do
     # For each coalition, create instance with selected features
     coalitions_list = Nx.to_list(coalitions)
 
-    instances =
-      Enum.map(coalitions_list, fn coalition ->
-        Enum.zip([coalition, instance, background_mean])
-        |> Enum.map(fn {present, inst_val, bg_val} ->
-          if present == 1, do: inst_val, else: bg_val
-        end)
-      end)
+    Enum.map(coalitions_list, fn coalition ->
+      create_single_coalition_instance(coalition, instance, background_mean)
+    end)
+  end
 
-    instances
+  defp create_single_coalition_instance(coalition, instance, background_mean) do
+    Enum.zip([coalition, instance, background_mean])
+    |> Enum.map(fn {present, inst_val, bg_val} ->
+      if present == 1, do: inst_val, else: bg_val
+    end)
   end
 
   defp get_predictions(instances, predict_fn) do
@@ -278,22 +279,20 @@ defmodule CrucibleXAI.SHAP.KernelSHAP do
     m = n_features
     s = trunc(size)
 
-    cond do
-      # Empty coalition or full coalition - use large weight
-      s == 0 or s == m ->
-        10_000.0
-
+    # Empty coalition or full coalition - use large weight
+    if s == 0 or s == m do
+      10_000.0
+    else
       # Normal coalitions
-      true ->
-        # weight = (M-1) / [C(M,|S|) × |S| × (M-|S|)]
-        binomial_coef = binomial(m, s)
-        denominator = binomial_coef * s * (m - s)
+      # weight = (M-1) / [C(M,|S|) × |S| × (M-|S|)]
+      binomial_coef = binomial(m, s)
+      denominator = binomial_coef * s * (m - s)
 
-        if denominator > 0 do
-          (m - 1) / denominator
-        else
-          10_000.0
-        end
+      if denominator > 0 do
+        (m - 1) / denominator
+      else
+        10_000.0
+      end
     end
   end
 

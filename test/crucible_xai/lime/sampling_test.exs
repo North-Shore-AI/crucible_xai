@@ -149,11 +149,12 @@ defmodule CrucibleXAI.LIME.SamplingTest do
       samples_list = Nx.to_flat_list(samples)
 
       assert Enum.all?(samples_list, fn x ->
-               is_number(x) and not is_nan(x) and not is_infinity(x)
+               is_number(x) and not nan?(x) and not infinity?(x)
              end)
     end
   end
 
-  defp is_nan(x), do: x != x
-  defp is_infinity(x), do: x == :infinity or x == :neg_infinity or abs(x) > 1.0e308
+  defp nan?(x) when is_float(x), do: :erlang.float_to_binary(x) == "nan"
+  defp nan?(_x), do: false
+  defp infinity?(x), do: x == :infinity or x == :neg_infinity or abs(x) > 1.0e308
 end

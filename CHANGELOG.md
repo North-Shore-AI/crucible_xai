@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Counterfactual explanations (DiCE)
 - Neural network-specific methods (LRP, DeepLIFT, GradCAM)
 
-## [0.4.0] - 2025-11-26
+## [0.4.0] - 2025-12-28
 
 ### Added - Pipeline Stage Integration
 
@@ -117,6 +117,15 @@ context = %{
 # updated_context.xai contains LIME and SHAP explanations
 ```
 
+### Code Quality Improvements
+
+- Resolved all Credo issues including complexity refactoring
+- Fixed all Dialyzer warnings and type specifications
+- Refactored long/complex functions to reduce cyclomatic complexity
+- Updated alias ordering across all modules for consistency
+- Replaced `Enum.map |> Enum.join` with `Enum.map_join`
+- Improved test isolation with logger level configuration
+
 ### Breaking Changes
 
 None - fully backward compatible with v0.3.0. The Stage module is a new addition that doesn't affect existing LIME/SHAP/FeatureAttribution APIs.
@@ -126,6 +135,8 @@ None - fully backward compatible with v0.3.0. The Stage module is a new addition
 - 25+ new tests added
 - Total test count: 362+ tests
 - Zero compilation warnings
+- Passes `mix credo --strict` with no issues
+- Passes `mix dialyzer` with no warnings
 - Full type specifications (@spec) for all Stage functions
 - 100% documentation coverage for Stage module
 

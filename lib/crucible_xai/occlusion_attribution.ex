@@ -205,15 +205,19 @@ defmodule CrucibleXAI.OcclusionAttribution do
 
     # Normalize if requested
     if normalize do
-      total = Enum.sum(Map.values(attributions))
-
-      if total == 0.0 do
-        attributions
-      else
-        Map.new(attributions, fn {k, v} -> {k, v / total} end)
-      end
+      normalize_attributions(attributions)
     else
       attributions
+    end
+  end
+
+  defp normalize_attributions(attributions) do
+    total = Enum.sum(Map.values(attributions))
+
+    if total == 0.0 do
+      attributions
+    else
+      Map.new(attributions, fn {k, v} -> {k, v / total} end)
     end
   end
 

@@ -39,8 +39,8 @@ defmodule CrucibleXAI.LIME do
       )
   """
 
-  alias CrucibleXAI.LIME.{Sampling, Kernels, FeatureSelection, InterpretableModels}
   alias CrucibleXAI.Explanation
+  alias CrucibleXAI.LIME.{FeatureSelection, InterpretableModels, Kernels, Sampling}
 
   require Logger
 
@@ -319,13 +319,16 @@ defmodule CrucibleXAI.LIME do
         )
 
       # Create subset of samples with only selected features
-      samples_subset =
-        Enum.map(samples_list, fn sample ->
-          Enum.map(selected_features, fn idx -> Enum.at(sample, idx) end)
-        end)
+      samples_subset = subset_sample_features(samples_list, selected_features)
 
       {selected_features, Nx.tensor(samples_subset)}
     end
+  end
+
+  defp subset_sample_features(samples_list, selected_features) do
+    Enum.map(samples_list, fn sample ->
+      Enum.map(selected_features, fn idx -> Enum.at(sample, idx) end)
+    end)
   end
 
   defp fit_interpretable_model(samples, predictions, sample_weights, :linear_regression) do

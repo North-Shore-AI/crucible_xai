@@ -204,7 +204,7 @@ defmodule CrucibleXAI.Global.PDP do
           Enum.map(data, fn instance -> Enum.at(instance, feature_index) end)
           |> Enum.reject(&is_nil/1)
 
-        if length(feature_values) == 0 do
+        if feature_values == [] do
           # Default range if no data
           {0.0, 1.0}
         else
