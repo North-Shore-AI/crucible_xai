@@ -42,7 +42,7 @@ defmodule CrucibleXai.MixProject do
     [
       {:nx, "~> 0.7"},
       {:crucible_ir, "~> 0.2.1"},
-      {:ex_doc, "~> 0.31", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.40.0", only: :dev, runtime: false},
       {:jason, "~> 1.4"},
       {:stream_data, "~> 1.1", only: :test},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
@@ -59,7 +59,7 @@ defmodule CrucibleXai.MixProject do
     [
       name: "crucible_xai",
       description: description(),
-      files: ~w(lib mix.exs README.md CHANGELOG.md LICENSE),
+      files: ~w(lib assets mix.exs README.md CHANGELOG.md LICENSE),
       licenses: ["MIT"],
       links: %{
         "GitHub" => @source_url,
