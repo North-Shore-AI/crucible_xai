@@ -59,7 +59,7 @@ defmodule CrucibleXai.MixProject do
     [
       name: "crucible_xai",
       description: description(),
-      files: ~w(lib assets mix.exs README.md CHANGELOG.md LICENSE),
+      files: ~w(lib assets mix.exs README.md CHANGELOG.md LICENSE docs),
       licenses: ["MIT"],
       links: %{
         "GitHub" => @source_url,
