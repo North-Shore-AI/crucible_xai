@@ -40,14 +40,14 @@ defmodule CrucibleXai.MixProject do
 
   defp deps do
     [
-      {:nx, "~> 0.7"},
-      {:crucible_ir, "~> 0.2.1"},
-      {:ex_doc, "~> 0.40.0", only: :dev, runtime: false},
+      {:nx, "~> 0.12.1"},
+      {:crucible_ir, "~> 0.3.0"},
+      {:ex_doc, "~> 0.40.3", only: :dev, runtime: false},
       {:jason, "~> 1.4"},
-      {:stream_data, "~> 1.1", only: :test},
+      {:stream_data, "~> 1.4", only: :test},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
-      {:excoveralls, "~> 0.18", only: :test}
+      {:excoveralls, "~> 0.18.5", only: :test}
     ]
   end
 
